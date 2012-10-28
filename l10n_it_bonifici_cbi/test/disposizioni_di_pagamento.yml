@@ -1,0 +1,33 @@
+-
+  I create bank detail
+-
+  !record {model: res.partner.bank, id: res_partner_bank_1}:
+    state: bank
+    company_id: base.main_company
+    partner_id: base.main_partner
+    acc_number: 123456789
+    footer: True
+    bank: base.res_bank_1
+    bank_name: Reserve
+
+-
+  In order to create a payment order, I create a payment mode
+-
+  !record {model: payment.mode, id: mode_1}:
+    name: 'bonifici'
+    bonifici_cbi: 1
+    bank_id: res_partner_bank_1
+    journal: account.bank_journal
+
+-
+  In order to test 'DISPOSIZIONI DI PAGAMENTO' wizard I create a Payment Order and confirm it with this wizard
+-
+  !record {model: payment.order, id: payment_order_1}:
+    reference: 'PO1'
+    mode: mode_1
+    line_ids:
+      - name: '1'
+        communication: 'payment for invoice n 3'
+        amount_currency: 120
+        partner_id: base.res_partner_3
+        bank_id:
