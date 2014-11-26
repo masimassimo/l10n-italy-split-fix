@@ -55,9 +55,6 @@ class mail_thread(orm.Model):
     def _message_find_partners(
         self, cr, uid, message, header_fields=['From'], context=None
     ):
-        """ Find partners related to some header fields of the message.
-
-            TDE TODO: merge me with other partner finding methods in 8.0 """
         if not self.is_server_pec(cr, uid, context=context):
             return super(mail_thread, self)._message_find_partners(
                 cr, uid, message, header_fields, context=context)
@@ -214,7 +211,6 @@ class mail_thread(orm.Model):
             if parent_ids:
                 msg_dict['parent_id'] = parent_ids[0]
 
-        msg_dict['server_id'] = context.get('fetchmail_server_id')
         msg_dict['pec_type'] = message.get('X-Tiporicevuta')
         msg_dict['pec_msg_id'] = message.get('Message-ID')
         msg_dict['ref_msg_id'] = message.get('X-Riferimento-Message-ID')

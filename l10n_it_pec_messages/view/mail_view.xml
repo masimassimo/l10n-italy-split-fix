@@ -29,7 +29,7 @@
             }</field>
             <field name="params" eval="&quot;{
                 'domain': [
-                  ('server_id.pec','=',True),
+                  ('pec','=',True),
                 ],
             }&quot;"/>
         </record>

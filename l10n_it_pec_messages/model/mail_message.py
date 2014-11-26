@@ -24,14 +24,59 @@
 ##############################################################################
 
 from openerp.osv import fields, orm
+from openerp.tools.translate import _
 
 
 class MailMessage(orm.Model):
     _inherit = "mail.message"
 
+    def _get_is_pec(self, cr, uid, ids, field_name, arg, context=None):
+        res = {}
+        mail_pool = self.pool['mail.mail']
+        for message in self.browse(cr, uid, ids, context=context):
+            res[message.id] = False
+            mail_ids = mail_pool.search(
+                cr, uid, [('mail_message_id', '=', message.id)],
+                context=context)
+            if len(mail_ids) > 1:
+                raise orm.except_orm(
+                    _('Error'),
+                    _('Too many mails for message %s') % message.id)
+            if mail_ids:
+                mail = mail_pool.browse(cr, uid, mail_ids[0], context=context)
+                if mail.fetchmail_server_id and mail.fetchmail_server_id.pec:
+                    res[message.id] = True
+        return res
+
+    def _get_message_by_mail(self, cr, uid, ids, context=None):
+        res = {}
+        for mail in self.pool['mail.mail'].browse(
+            cr, uid, ids, context=context
+        ):
+            res[mail.mail_message_id] = True
+        return res.keys()
+
+    def _get_message_by_server(self, cr, uid, ids, context=None):
+        res = {}
+        mail_pool = self.pool['mail.mail']
+        mail_ids = mail_pool.search(
+            cr, uid, [('fetchmail_server_id', 'in', ids)], context=context)
+        for mail in mail_pool.browse(cr, uid, mail_ids, context=context):
+            if mail.mail_message_id:
+                res[mail.mail_message_id.id] = True
+        return res.keys()
+
     _columns = {
-        'server_id': fields.many2one(
-            'fetchmail.server', 'Server Pec', readonly=True),
+        # this doesn not seem to work because mail.mail is not created by
+        # fetchmail
+        'pec': fields.function(
+            _get_is_pec, type="boolean", string="PEC mail",
+            store={
+                'mail.mail': (
+                    _get_message_by_mail,
+                    ['mail_message_id', 'fetchmail_server_id'], 10),
+                'fetchmail.server': (_get_message_by_server, ['pec'], 10),
+                }),
         'pec_type': fields.selection([
             ('posta-certificata', 'Pec Mail'),
             ('accettazione', 'Reception'),
