@@ -23,6 +23,7 @@ from openerp.report import report_sxw
 from openerp import _
 import logging
 from datetime import datetime
+from openerp.addons.report_webkit import webkit_report
 
 _logger = logging.getLogger(__name__)
 
@@ -43,7 +44,7 @@ class Parser(report_sxw.rml_parse):
                         move_line.tax_code_id.id] = True
                 res[move_line.tax_code_id.id] += (
                     move_line.tax_amount
-                    * self.localcontext['data']['tax_sign'])
+                    * self.localcontext['data']['form']['tax_sign'])
         return res
 
     def _get_tax_lines(self, move):
@@ -101,7 +102,7 @@ class Parser(report_sxw.rml_parse):
         res = []
         res_dict = {}
         tax_code_obj = self.pool.get('account.tax.code')
-        for period_id in self.localcontext['data']['period_ids']:
+        for period_id in self.localcontext['data']['form']['period_ids']:
             for tax_code in tax_code_obj.browse(
                 self.cr, self.uid,
                 tax_code_ids, context={
@@ -112,7 +113,7 @@ class Parser(report_sxw.rml_parse):
                     res_dict[tax_code.id] = 0.0
                 res_dict[tax_code.id] += (
                     tax_code.sum_period
-                    * self.localcontext['data']['tax_sign'])
+                    * self.localcontext['data']['form']['tax_sign'])
         for tax_code_id in res_dict:
             tax_code = tax_code_obj.browse(self.cr, self.uid, tax_code_id)
             if res_dict[tax_code_id]:
@@ -138,7 +139,7 @@ class Parser(report_sxw.rml_parse):
         start_date = False
         for period in period_obj.browse(
             self.cr, self.uid,
-            self.localcontext['data']['period_ids']
+            self.localcontext['data']['form']['period_ids']
         ):
             period_start = datetime.strptime(period.date_start, '%Y-%m-%d')
             if not start_date or start_date > period_start:
@@ -150,7 +151,7 @@ class Parser(report_sxw.rml_parse):
         end_date = False
         for period in period_obj.browse(
             self.cr, self.uid,
-            self.localcontext['data']['period_ids']
+            self.localcontext['data']['form']['period_ids']
         ):
             period_end = datetime.strptime(period.date_stop, '%Y-%m-%d')
             if not end_date or end_date < period_end:
@@ -171,23 +172,23 @@ class Parser(report_sxw.rml_parse):
 
     def set_context(self, objects, data, ids, report_type=None):
         self.localcontext.update({
-            'fiscal_page_base': data.get('fiscal_page_base'),
+            'fiscal_page_base': data['form'].get('fiscal_page_base'),
         })
         return super(Parser, self).set_context(
             objects, data, ids, report_type=report_type)
 
-report_sxw.report_sxw(
+webkit_report.WebKitParser(
     'report.registro_iva_vendite',
-    'registro_iva_vendite',
+    'account.move',
     'addons/l10n_it_vat_registries/templates/registro_iva_vendite.mako',
     parser=Parser)
-report_sxw.report_sxw(
+webkit_report.WebKitParser(
     'report.registro_iva_acquisti',
-    'registro_iva_acquisti',
+    'account.move',
     'addons/l10n_it_vat_registries/templates/registro_iva_acquisti.mako',
     parser=Parser)
-report_sxw.report_sxw(
+webkit_report.WebKitParser(
     'report.registro_iva_corrispettivi',
-    'registro_iva_corrispettivi',
+    'account.move',
     'addons/l10n_it_vat_registries/templates/registro_iva_corrispettivi.mako',
     parser=Parser)
