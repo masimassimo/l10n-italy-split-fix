@@ -44,6 +44,7 @@ to guarantee compatibility.
         'views/stock_view.xml',
         'wizard/ddt_from_pickings_view.xml',
         'wizard/ddt_create_invoice_view.xml',
+        'wizard/add_picking_to_ddt.xml',
         'workflow/stock_ddt_workflow.xml',
         'views/report_ddt.xml'
     ],

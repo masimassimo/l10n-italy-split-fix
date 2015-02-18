@@ -74,14 +74,6 @@ class StockDdT(models.Model):
         return self.env['ir.sequence'].search(
             [('code', '=', 'stock.ddt')])[0].id
 
-    def _compute_picking_ids(self):
-        picking_ids = []
-        for ddt in self:
-            for line in ddt.ddt_lines:
-                if line.move_line_id.picking_id.id not in picking_ids:
-                    picking_ids.append(line.move_line_id.picking_id.id)
-            ddt.picking_ids = picking_ids
-
     name = fields.Char(string='Number')
     date = fields.Datetime(required=True, default=fields.Datetime.now())
     delivery_date = fields.Datetime()
@@ -110,6 +102,7 @@ class StockDdT(models.Model):
     carrier_id = fields.Many2one(
         'res.partner', string='Carrier')
     parcels = fields.Integer()
+    note = fields.Text('Note')
     state = fields.Selection(
         [('draft', 'Draft'),
          ('confirmed', 'Confirmed'),

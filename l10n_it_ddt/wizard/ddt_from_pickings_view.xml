@@ -7,8 +7,8 @@
             <field name="model">ddt.from.pickings</field>
             <field name="arch" type="xml">
               <form string="DDT from Pickings">
-                    <separator string="Picking" />
-                    <field name="picking_ids" readonly="1" />
+                <separator string="Picking" />
+                    <field string="Pickings" name="picking_ids" readonly="1"/>
                     <footer>
                         <button name="create_ddt" string="Create" type="object" class="oe_highlight"/>
                         or

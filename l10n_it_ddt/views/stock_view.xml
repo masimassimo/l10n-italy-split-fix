@@ -63,6 +63,9 @@
                                     </group>
                                 </group>
                             </page>
+                            <page string="Note">
+                                <field name="note"/>
+                            </page>
                         </notebook>
                     </sheet>
                 </form>
