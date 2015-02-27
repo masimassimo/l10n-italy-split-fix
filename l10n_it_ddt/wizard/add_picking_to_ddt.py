@@ -41,33 +41,35 @@ class AddPickingToDdt(models.TransientModel):
         for picking in pickings:
             if picking.ddt_id:
                 raise Warning(
-                    _("Pickings already in ddt"))
+                    _("Picking %s already in ddt") % picking.name)
             elif picking.partner_id != self.ddt_id.partner_id:
                 raise Warning(
-                    _("Selected Pickings have different Partner"))
+                    _("Selected Picking %s have"
+                      " different Partner") % picking.name)
             elif picking.sale_id.parcels != self.ddt_id.parcels:
                 raise Warning(
-                    _("Selected Pickings have different parcels"))
+                    _("Selected Picking %s have"
+                      " different parcels") % picking.name)
             elif picking.sale_id.carriage_condition_id != (
                     self.ddt_id.carriage_condition_id):
                 raise Warning(
-                    _("Selected Pickings have"
-                      " different carriage condition"))
+                    _("Selected Picking %s have"
+                      " different carriage condition") % picking.name)
             elif picking.sale_id.goods_description_id != (
                     self.ddt_id.goods_description_id):
                 raise Warning(
-                    _("Selected Pickings have "
-                      "different goods description"))
+                    _("Selected Picking %s have "
+                      "different goods description") % picking.name)
             elif picking.sale_id.transportation_reason_id != (
                     self.ddt_id.transportation_reason_id):
                 raise Warning(
-                    _("Selected Pickings have"
-                      " different transportation reason"))
+                    _("Selected Picking %s have"
+                      " different transportation reason") % picking.name)
             elif picking.sale_id.transportation_method_id != (
                     self.ddt_id.transportation_method_id):
                 raise Warning(
-                    _("Selected Pickings have"
-                      " different transportation reason"))
+                    _("Selected Picking %s have"
+                      " different transportation reason") % picking.name)
             picking.ddt_id = self.ddt_id
         ir_model_data = self.env['ir.model.data']
         form_res = ir_model_data.get_object_reference('l10n_it_ddt',
