@@ -20,11 +20,7 @@
 #
 ##############################################################################
 
-from openerp import fields
-from openerp import models
-from openerp import api
-from openerp import _
-from openerp.exceptions import Warning
+from openerp import fields, models, api
 
 
 class StockPickingCarriageCondition(models.Model):
