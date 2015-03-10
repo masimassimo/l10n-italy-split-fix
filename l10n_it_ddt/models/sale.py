@@ -75,7 +75,7 @@ class SaleOrder(models.Model):
                 ] = partner.transportation_method_id.id
         return result
 
-    def _make_invoice(self, cr, uid, order, lines, context={}):
+    def _make_invoice(self, cr, uid, order, lines, context=None):
         inv_id = super(SaleOrder, self)._make_invoice(
             cr, uid, order, lines, context)
         self.pool.get('account.invoice').write(cr, uid, [inv_id], {
