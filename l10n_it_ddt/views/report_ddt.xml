@@ -61,7 +61,9 @@
                         <h6>Firma destinatario</h6>
                         <div class="signature"></div>
                     </td>
-                    <td colspan="2"><h6>Note</h6></td>
+                    <td colspan="2"><h6>Note</h6>
+                        <span t-field="ddt.note"></span>
+                    </td>
                 </tr>
             </table>
         </template>
