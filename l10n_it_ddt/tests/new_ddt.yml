@@ -3,6 +3,7 @@
 - 
   !record {model: sale.order, id: sale_oder_1}:
     partner_id: base.res_partner_18
+    create_ddt: 1
     order_line:
       - product_id: product.product_product_5b
         product_uom_qty: 2
@@ -50,6 +51,7 @@
   !record {model: sale.order, id: sale_oder_4}:
     partner_id: base.res_partner_18
     order_policy: picking
+    create_ddt: 1
     order_line:
       - product_id: product.product_product_5b
         product_uom_qty: 1
