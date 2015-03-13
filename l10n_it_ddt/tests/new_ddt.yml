@@ -94,20 +94,23 @@
 -
   !workflow {model: sale.order, action: order_confirm, ref: sale_oder_5}
 -
-I create a stock picking
+ I create a sale order without creating ddt
 -
-  !record {model: stock.picking, id: stock_picking_1}:
+  !record {model: sale.order, id: sale_oder_6}:
     partner_id: base.res_partner_18
-    move_lines:
+    create_ddt: 0
+    order_line:
       - product_id: product.product_product_5b
         product_uom_qty: 2
 -
-I add a picking to an existing DDT
+  !workflow {model: sale.order, action: order_confirm, ref: sale_oder_6}
+-
+ I add a picking to an existing DDT
 -
   !python {model: stock.picking}: |
     order = self.browse(cr, uid, ref("sale_oder_5"))
-    picking = self.browse(cr, uid, ref("stock_picking_1"))
-    context['active_ids'] = [picking]
+    order2 = self.browse(cr, uid, ref("sale_oder_6"))
+    context['active_ids'] = [p.id for p in order2.picking_ids]
     ddt = self.pool['stock.ddt'].search(cr, uid, [('picking_ids', 'in', [p.id for p in order.picking_ids])])
     wizard_pool = self.pool['add.pickings.to.ddt']
     wizard_id = wizard_pool.create(cr, uid, {'ddt_id':ddt}, context=context)
