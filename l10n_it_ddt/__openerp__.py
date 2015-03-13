@@ -32,9 +32,9 @@ Class, method and fields name are the same of l10n_it_sale, in order
 to guarantee compatibility.
 
     """,
-    'author': 'Davide Corio',
-    'website': 'http://www.davidecorio.com',
-    'depends': ['account', 'base', 'stock', 'stock_account', 'sale', 'sale_stock'],
+    'author': 'Davide Corio, Odoo Community Association (OCA)',
+    'website': 'https://github.com/OCA/l10n-italy',
+    'depends': ['sale_stock', 'stock_account'],
     'data': [
         'security/ir.model.access.csv',
         'data/stock_data.xml',
