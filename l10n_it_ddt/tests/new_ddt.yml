@@ -108,8 +108,8 @@
  I add a picking to an existing DDT
 -
   !python {model: stock.picking}: |
-    order = self.browse(cr, uid, ref("sale_oder_5"))
-    order2 = self.browse(cr, uid, ref("sale_oder_6"))
+    order = self.pool['sale.order'].browse(cr, uid, ref("sale_oder_5"))
+    order2 = self.pool['sale.order'].browse(cr, uid, ref("sale_oder_6"))
     context['active_ids'] = [p.id for p in order2.picking_ids]
     ddt = self.pool['stock.ddt'].search(cr, uid, [('picking_ids', 'in', [p.id for p in order.picking_ids])])
     wizard_pool = self.pool['add.pickings.to.ddt']
