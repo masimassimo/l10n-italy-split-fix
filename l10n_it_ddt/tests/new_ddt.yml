@@ -118,5 +118,5 @@
     wizard = wizard_pool.browse(cr, uid, wizard_id, context=context)
     res = wizard.add_to_ddt()
     ddt_browse = ddt_pool.browse(cr, uid, ddt, context=context)
-    assert len(ddt_browse.picking_ids) == 1, "Picking not added to DDT"
+    assert len(ddt_browse.picking_ids) == 2, "Picking not added to DDT"
 
