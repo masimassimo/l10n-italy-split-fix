@@ -110,11 +110,13 @@
   !python {model: stock.picking}: |
     order = self.pool['sale.order'].browse(cr, uid, ref("sale_oder_5"))
     order2 = self.pool['sale.order'].browse(cr, uid, ref("sale_oder_6"))
+    ddt_pool = self.pool['stock.ddt']
     context['active_ids'] = [p.id for p in order2.picking_ids]
-    ddt = self.pool['stock.ddt'].search(cr, uid, [('picking_ids', 'in', [p.id for p in order.picking_ids])])[0]
+    ddt = ddt_pool.search(cr, uid, [('picking_ids', 'in', [p.id for p in order.picking_ids])])[0]
     wizard_pool = self.pool['add.pickings.to.ddt']
     wizard_id = wizard_pool.create(cr, uid, {'ddt_id':ddt}, context=context)
     wizard = wizard_pool.browse(cr, uid, wizard_id, context=context)
     res = wizard.add_to_ddt()
-    assert len(ddt.picking_ids) == 1, "Picking not added to DDT"
+    ddt_browse = ddt_pool.browse(cr, uid, ddt, context=context)
+    assert len(ddt_browse.picking_ids) == 1, "Picking not added to DDT"
 
