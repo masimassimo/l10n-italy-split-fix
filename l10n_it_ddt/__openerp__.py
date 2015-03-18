@@ -32,8 +32,8 @@ Class, method and fields name are the same of l10n_it_sale, in order
 to guarantee compatibility.
 
     """,
-    'author': 'Davide Corio, Odoo Community Association (OCA)',
-    'website': 'https://github.com/OCA/l10n-italy',
+    'author': 'Davide Corio, Agile Business Group',
+    'website': 'http://www.odoo-italia.org',
     'depends': ['sale_stock', 'stock_account'],
     'data': [
         'security/ir.model.access.csv',

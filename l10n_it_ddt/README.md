@@ -19,3 +19,6 @@ Nevertheless, we can select pickings and the use the "DdT from Pickings"
 action to automatically create a DdT from the selected pickings and a new DdT
 is automatically created after the confirmation of a sale order.
 This DdT will contain all the pickings related to the confirmed sale order. 
+
+Yoy can also add Pickings to an existing DDT using the "Add Pickings to DdT"
+action, and so automatically update lines and tab Pickings on selected DDT
