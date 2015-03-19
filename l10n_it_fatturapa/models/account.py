@@ -87,38 +87,39 @@ class fatturapa_related_document_type(orm.Model):
     _description = 'FatturaPA Related Document Type'
 
     _columns = {
-        'type': fields.selection([('order', 'Order'),
-                                  ('contract', 'Contract'),
-                                  ('agreement', 'Agreement'),
-                                  ('reception', 'Reception'),
-                                  ('invoice', 'Related Invoice')],
-                                 'Document Type', required=True),
-        'name': fields.char('DocumentID', size=128, required=True),
+        'type': fields.selection(
+            [
+                ('order', 'Order'),
+                ('contract', 'Contract'),
+                ('agreement', 'Agreement'),
+                ('reception', 'Reception'),
+                ('invoice', 'Related Invoice')
+            ],
+            'Document Type', required=True
+        ),
+        'name': fields.char('DocumentID', size=20, required=True),
         'lineRef': fields.integer('LineRef'),
-        'invoice_line_id': fields.many2one('account.invoice.line',
-                                           'Related Invoice Line',
-                                           ondelete='cascade',
-                                           select=True),
-        'invoice_id': fields.many2one('account.invoice',
-                                           'Related Invoice',
-                                           ondelete='cascade',
-                                           select=True),
+        'invoice_line_id': fields.many2one(
+            'account.invoice.line', 'Related Invoice Line',
+            ondelete='cascade', select=True),
+        'invoice_id': fields.many2one(
+            'account.invoice', 'Related Invoice',
+            ondelete='cascade', select=True),
         'date': fields.date('Date'),
-        'numitem': fields.integer('NumItem'),
-        'code': fields.char('Order Agreement Code', size=64),
-        'cig': fields.char('CIG Code', size=64),
-        'cup': fields.char('CUP Code', size=64),
+        'numitem': fields.char('NumItem', size=20),
+        'code': fields.char('Order Agreement Code', size=100),
+        'cig': fields.char('CIG Code', size=14),
+        'cup': fields.char('CUP Code', size=14),
     }
-
 
     def create(self, cr, uid, vals, context=None):
         if not context:
             context = {}
-        line_obj = self.pool.get('account.invoice.line')
-        line = line_obj.browse(cr, uid,
-                               vals['invoice_line_id'],
-                               context=context)
-        vals['lineRef'] = line.sequence
+        if vals.get('invoice_line_id'):
+            line_obj = self.pool.get('account.invoice.line')
+            line = line_obj.browse(
+                cr, uid, vals['invoice_line_id'], context=context)
+            vals['lineRef'] = line.sequence
         return super(fatturapa_related_document_type, self).\
             create(cr, uid, vals, context)
 
@@ -141,4 +142,14 @@ class account_invoice_line(orm.Model):
         'related_documents': fields.one2many('fatturapa.related_document_type',
                                              'invoice_line_id',
                                              'Related Documents Type'),
+    }
+
+
+class account_invoice(orm.Model):
+    _inherit = "account.invoice"
+
+    _columns = {
+        'related_documents': fields.one2many('fatturapa.related_document_type',
+                                             'invoice_id',
+                                             'Related Documents'),
     }

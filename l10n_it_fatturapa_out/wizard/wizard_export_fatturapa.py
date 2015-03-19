@@ -22,7 +22,7 @@
 import base64
 import re
 import tempfile
-
+from pyxb.exceptions_ import SimpleFacetValueError
 from openerp.osv import orm
 from openerp import addons
 from openerp.addons.l10n_it_fatturapa.bindings.fatturapa_v_1_1 import (
@@ -525,6 +525,7 @@ class WizardExportFatturapa(orm.TransientModel):
 
     def setRelatedDocumentTypes(self, cr, uid, invoice, body,
                                 context=None):
+        linecount = 1
         for line in invoice.invoice_line:
             for related_document in line.related_documents:
                 doc_type = RELATED_DOCUMENT_TYPES[related_document.type]
@@ -532,8 +533,7 @@ class WizardExportFatturapa(orm.TransientModel):
                 if related_document.name:
                     documento.IdDocumento = related_document.name
                 if related_document.lineRef:
-                    # TODO handle link between document and invoice line
-                    documento.RiferimentoNumeroLinea = related_document.lineRef
+                    documento.RiferimentoNumeroLinea.append(linecount)
                 if related_document.date:
                     documento.Data = related_document.date
                 if related_document.numitem:
@@ -547,6 +547,25 @@ class WizardExportFatturapa(orm.TransientModel):
                 eval(
                     "body.DatiGenerali." +
                     doc_type + ".append(documento)")
+            linecount += 1
+        for related_document in invoice.related_documents:
+            doc_type = RELATED_DOCUMENT_TYPES[related_document.type]
+            documento = DatiDocumentiCorrelatiType()
+            if related_document.name:
+                documento.IdDocumento = related_document.name
+            if related_document.date:
+                documento.Data = related_document.date
+            if related_document.numitem:
+                documento.NumItem = related_document.numitem
+            if related_document.code:
+                documento.CodiceCommessaConvenzione = related_document.code
+            if related_document.cup:
+                documento.CodiceCUP = related_document.cup
+            if related_document.cig:
+                documento.CodiceCIG = related_document.cig
+            eval(
+                "body.DatiGenerali." +
+                doc_type + ".append(documento)")
         return True
 
     def setDatiTrasporto(self, cr, uid, invoice, body, context=None):
@@ -742,21 +761,27 @@ class WizardExportFatturapa(orm.TransientModel):
         user_obj = self.pool['res.users']
         company = user_obj.browse(cr, uid, uid).company_id
 
-        self.setFatturaElettronicaHeader(cr, uid, company,
-                                         partner, context=context)
-        for invoice_id in invoice_ids:
-            inv = invoice_obj.browse(cr, uid, invoice_id, context=context)
-            if inv.fatturapa_attachment_out_id:
-                raise orm.except_orm(
-                    _("Error"),
-                    _("Invoice %s has FatturaPA Export File yet") % inv.number)
-            invoice_body = FatturaElettronicaBodyType()
-            self.setFatturaElettronicaBody(
-                cr, uid, inv, invoice_body, context=context)
-            self.fatturapa.FatturaElettronicaBody.append(invoice_body)
-            # TODO DatiVeicoli
+        try:
+            self.setFatturaElettronicaHeader(cr, uid, company,
+                                             partner, context=context)
+            for invoice_id in invoice_ids:
+                inv = invoice_obj.browse(cr, uid, invoice_id, context=context)
+                if inv.fatturapa_attachment_out_id:
+                    raise orm.except_orm(
+                        _("Error"),
+                        _("Invoice %s has FatturaPA Export File yet") % (
+                            inv.number))
+                invoice_body = FatturaElettronicaBodyType()
+                self.setFatturaElettronicaBody(
+                    cr, uid, inv, invoice_body, context=context)
+                self.fatturapa.FatturaElettronicaBody.append(invoice_body)
+                # TODO DatiVeicoli
 
-        self.setProgressivoInvio(cr, uid, context=context)
+            self.setProgressivoInvio(cr, uid, context=context)
+        except SimpleFacetValueError as e:
+            raise orm.except_orm(
+                _("Error"),
+                (unicode(e)))
 
         attach_id = self.saveAttachment(cr, uid, context=context)
 
