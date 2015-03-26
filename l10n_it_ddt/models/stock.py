@@ -71,7 +71,7 @@ class StockDdT(models.Model):
             [('code', '=', 'stock.ddt')])[0].id
 
     name = fields.Char(string='Number')
-    date = fields.Datetime(required=True, default=fields.Datetime.now())
+    date = fields.Datetime(required=True, default=fields.Datetime.now)
     delivery_date = fields.Datetime()
     sequence = fields.Many2one(
         'ir.sequence', string='Sequence',
