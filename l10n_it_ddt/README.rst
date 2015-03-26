@@ -9,7 +9,7 @@ This is a total refactoring of the previews module (l10n_it_sale v7).
 Usage
 =====
 
-With this brand new module we have the possibility to keep pickings and DdTs
+With this module we have the possibility to keep pickings and DDTs
 separated.
 
 You can create a DDT From a Sale Order, setting True field create_ddt that
