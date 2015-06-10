@@ -18,5 +18,11 @@
 #
 ##############################################################################
 
-from . import send_notification
-from . import import_notification
+from openerp.osv import orm
+
+
+class ImportNotification(orm.TransientModel):
+    _inherit = 'wizard.fatturapa.import.notification'
+    _defaults = {
+        'invoice_type': 'supplier'
+        }
