@@ -29,6 +29,10 @@ class res_company(models.Model):
         'account.account',
         string='Split Payment Write-off Account',
         help='Account used to write off the VAT amount')
+    sp_tax_code_id = fields.Many2one(
+        'account.tax.code',
+        string='Split Payment Write-off Tax Code',
+        help='Tax Code used to write off the VAT amount')
     sp_journal_id = fields.Many2one(
         'account.journal',
         string='Split Payment Write-off Journal',
@@ -42,6 +46,10 @@ class account_config_settings(models.TransientModel):
         related='company_id.sp_account_id',
         string='Split Payment Write-off account',
         help='Account used to write off the VAT amount')
+    sp_tax_code_id = fields.Many2one(
+        related='company_id.sp_tax_code_id',
+        string='Split Payment Write-off Tax Code',
+        help='Tax Code used to write off the VAT amount')
     sp_journal_id = fields.Many2one(
         related='company_id.sp_journal_id',
         string='Split Payment Write-off Journal',

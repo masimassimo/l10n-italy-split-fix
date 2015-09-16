@@ -59,6 +59,7 @@ class TestSP(TransactionCase):
         credit_line = False
         for line in invoice.sp_move_id.line_id:
             if line.account_id.id == self.company.sp_account_id.id:
+                self.assertEqual(line.tax_amount, 22)
                 vat_line = True
             if line.account_id.id == self.a_recv.id:
                 credit_line = True

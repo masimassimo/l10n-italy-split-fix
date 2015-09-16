@@ -64,7 +64,7 @@ class AccountInvoice(models.Model):
 
     def _build_credit_vals(self):
         return {
-            'name': _('Split Payment Write Off'),
+            'name': self.number + _(': Split Payment Write Off'),
             'partner_id': self.partner_id.id,
             'account_id': self.account_id.id,
             'journal_id': self.journal_id.id,
@@ -76,7 +76,7 @@ class AccountInvoice(models.Model):
 
     def _build_debit_line(self):
         return {
-            'name': _('Split Payment Write Off'),
+            'name': self.number + _(': Split Payment Write Off'),
             'partner_id': self.partner_id.id,
             'account_id': self.company_id.sp_account_id.id,
             'journal_id': self.journal_id.id,
@@ -84,6 +84,8 @@ class AccountInvoice(models.Model):
             'date': self.date_invoice,
             'debit': self.amount_sp,
             'credit': 0,
+            'tax_code_id': self.company_id.sp_tax_code_id.id,
+            'tax_amount': self.amount_sp,
             }
 
     @api.multi

@@ -15,7 +15,7 @@ Configuration
 
 To configure this module, you need to:
 
-* go to Settings, Configuration, Accounting and configure 'Split Payment Write-off account' and 'Split Payment Write-off Journal'. Write-off account should be different from standard debit VAT, in order to separately add it in VAT statement.
+* go to Settings, Configuration, Accounting and configure 'Split Payment Write-off account', 'Split Payment Write-off Tax Code' and 'Split Payment Write-off Journal'. Write-off account should be different from standard debit VAT, in order to separately add it in VAT statement.
 * configure the fiscale position used for split payment, setting 'Split Payment' flag
 
 Usage
