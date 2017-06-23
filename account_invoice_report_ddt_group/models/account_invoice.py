@@ -40,7 +40,7 @@ class AccountInvoice(models.Model):
                             ddt.ddt_number, '%s/%s/%s' % (
                                 ddt_date.day, ddt_date.month, ddt_date.year)
                         )
-                        if not 'DDT' in ddt_key.upper():
+                        if 'DDT' not in ddt_key.upper():
                             ddt_key = 'DDT %s' % (ddt_key)
                         if string_key:
                             string_key += ', %s' % ddt_key
