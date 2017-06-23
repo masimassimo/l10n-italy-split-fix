@@ -5,6 +5,7 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
 from openerp import models, api, fields
+import collections
 
 
 class AccountInvoice(models.Model):
@@ -49,6 +50,12 @@ class AccountInvoice(models.Model):
                 group[string_key] = ddt_dict[key]
             else:
                 group[string_key].append(ddt_dict[key])
+        if group:
+            group_ordered = collections.OrderedDict()
+            keys_ordered = sorted(group.keys())
+            for key in keys_ordered:
+                group_ordered[key] = group[key]
+            group = group_ordered
         return group
 
     @api.multi
