@@ -49,9 +49,15 @@ class AccountInvoice(models.Model):
             # group dict can be different from ddt_dict,
             # e.g. when DDT does not have a number yet
             if string_key not in group:
-                group[string_key] = ddt_dict[key]
+                group[string_key] = {'lines': ddt_dict[key]}
+                group[string_key]['shipping_address'] = ''
+                if string_key and ddt.partner_shipping_id.parent_id.\
+                        ddt_invoice_print_shipping_address:
+                    group[string_key]['shipping_address'] =\
+                        self._prepare_ddt_shipping_address(
+                            ddt.partner_shipping_id)
             else:
-                group[string_key].append(ddt_dict[key])
+                group[string_key]['lines'].append(ddt_dict[key])
         # Order dict by ddt number
         if group:
             group_ordered = collections.OrderedDict()
@@ -68,3 +74,9 @@ class AccountInvoice(models.Model):
             if line.ddt_line_id.lot_ids:
                 return True
         return False
+
+    @api.multi
+    def _prepare_ddt_shipping_address(self, partner_shipping_id):
+        shipping_address = '{} - {}'.format(partner_shipping_id.name,
+                                            partner_shipping_id.city)
+        return shipping_address
