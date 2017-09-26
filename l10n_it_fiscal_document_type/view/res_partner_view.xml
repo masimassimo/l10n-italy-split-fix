@@ -1,6 +1,5 @@
 <?xml version="1.0" ?>
-<openerp>
-    <data>
+<odoo>
         <record id="view_partner_fiscal_document_type" model="ir.ui.view">
             <field name="name">res.partner.fiscal.document.type.form</field>
             <field name="model">res.partner</field>
@@ -15,5 +14,4 @@
             </field>
         </record>
 
-  </data>
-</openerp>
+</odoo>
