@@ -51,26 +51,20 @@ class WizardComputeFc(models.TransientModel):
         }
 
         if self.birth_city:
-            city = self.birth_city.name
-
             # SMELLS: Add a foreign key in "res_city_it_code"
             #          instead using the weak link "code" <-> "province".
             #
-            self.env.cr.execute("""
-                SELECT "p"."id" FROM "res_country_state" AS "p"
-                    INNER JOIN "res_city_it_code" AS "c"
-                        ON ("p"."code" = "c"."province")
+            city_ids = self.env['res.city.it.code'] \
+                .search([('name', '=', self.birth_city.name)])
+            provinces = city_ids.mapped('province')
+            province_ids = self.env['res.country.state'] \
+                .search([('country_id', '=', it), ('code', 'in', provinces)])
 
-                WHERE "p"."country_id" = %s AND "c"."name" = %s;
-            """, (it, city))
-
-            province_ids = self.env.cr.fetchall()
-            province_ids = [id[0] for id in province_ids]
-
-            res['domain']['birth_province'].append(('id', 'in', province_ids))
+            res['domain']['birth_province'] \
+                .append(('id', 'in', province_ids.ids))
 
             if len(province_ids) == 1:
-                res['value']['birth_province'] = province_ids[0]
+                res['value']['birth_province'] = province_ids.id
 
         if self.birth_province:
             res.pop('value')
@@ -83,27 +77,20 @@ class WizardComputeFc(models.TransientModel):
         self.ensure_one()
 
         res = {'domain': {'birth_city': []}}
+
         if not self.birth_city:
             if self.birth_province:
-                province = self.birth_province.id
-
                 # SMELLS: Add a foreign key in "res_city_it_code"
                 #          instead using the weak link "code" <-> "province".
                 #
-                self.env.cr.execute("""
-                    SELECT "d"."id" FROM "res_city_it_code" AS "c"
-                        INNER JOIN "res_country_state" AS "p"
-                            ON ("c"."province" = "p"."code")
-                        INNER JOIN "res_city_it_code_distinct" AS "d"
-                            ON ("c"."name" = "d"."name")
+                city_ids = self.env['res.city.it.code'] \
+                    .search([('province', '=', self.birth_province.code)])
+                names = city_ids.mapped('names')
+                distinct_city_ids = self.env['res.city.it.code.distinct'] \
+                    .search([('name', 'in', names)])
 
-                    WHERE "p"."id" = %s;
-                """, (province,))
-
-                city_ids = self.env.cr.fetchall()
-                city_ids = [id[0] for id in city_ids]
-
-                res['domain']['birth_city'].append(('id', 'in', city_ids))
+                res['domain']['birth_city'] \
+                    .append(('id', 'in', distinct_city_ids.ids))
 
         return res
 
