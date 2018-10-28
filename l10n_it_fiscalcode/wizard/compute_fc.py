@@ -71,29 +71,6 @@ class WizardComputeFc(models.TransientModel):
 
         return res
 
-    @api.multi
-    @api.onchange('birth_province')
-    def onchange_birth_province(self):
-        self.ensure_one()
-
-        res = {'domain': {'birth_city': []}}
-
-        if not self.birth_city:
-            if self.birth_province:
-                # SMELLS: Add a foreign key in "res_city_it_code"
-                #          instead using the weak link "code" <-> "province".
-                #
-                city_ids = self.env['res.city.it.code'] \
-                    .search([('province', '=', self.birth_province.code)])
-                names = city_ids.mapped('names')
-                distinct_city_ids = self.env['res.city.it.code.distinct'] \
-                    .search([('name', 'in', names)])
-
-                res['domain']['birth_city'] \
-                    .append(('id', 'in', distinct_city_ids.ids))
-
-        return res
-
     def _get_national_code(self, birth_city, birth_prov, birth_date):
         """
         notes fields contains variation data while var_date may contain the
