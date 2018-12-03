@@ -92,7 +92,6 @@ class FatturaPAAttachmentOut(models.Model):
                     if catchall_alias:
                         config_parameter.set_param(
                             'mail.catchall.alias', 'False')
-
                     try:
                         mail.send(raise_exception=True)
                         att.state = 'sent'
