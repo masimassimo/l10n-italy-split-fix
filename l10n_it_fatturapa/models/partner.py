@@ -34,7 +34,7 @@ class ResPartner(models.Model):
              "hanno accreditato un canale; qualora il destinatario non abbia "
              "accreditato un canale presso Sdi e riceva via PEC le fatture, "
              "l'elemento deve essere valorizzato con tutti zeri ('0000000'). ",
-    default='0000000')
+        default='0000000')
     # 1.1.6
     pec_destinatario = fields.Char(
         "PEC destinatario",
@@ -58,28 +58,24 @@ class ResPartner(models.Model):
             if partner.electronic_invoice_subjected and partner.customer:
                 # These checks must be done for customers only, as only
                 # needed for XML generation
-                if partner.is_pa and (
-                    not partner.ipa_code or len(partner.ipa_code) != 6
-                ):
+                if partner.is_pa and \
+                        (not partner.ipa_code or len(partner.ipa_code) != 6):
                     raise ValidationError(_(
                         "As a Public Administration, partner %s IPA Code "
                         "must be 6 characters long"
                     ) % partner.name)
-                if not partner.is_company and (
-                            not partner.lastname or not partner.firstname
-                ):
+                if not partner.is_company and \
+                        (not partner.lastname or not partner.firstname):
                     raise ValidationError(_(
                         "As a natural person, partner %s "
                         "must have Name and Surname"
                     ) % partner.name)
                 if not partner.is_pa and (
                     not partner.codice_destinatario or
-                    len(partner.codice_destinatario) != 7
-                ):
-                    raise ValidationError(_(
-                        "Partner %s Addressee Code "
-                        "must be 7 characters long"
-                    ) % partner.name)
+                        len(partner.codice_destinatario) != 7):
+                    raise ValidationError(_("Partner %s Addressee Code"
+                                            " must be 7 characters long")
+                                          % partner.name)
                 if not partner.vat and not partner.fiscalcode:
                     raise ValidationError(_(
                         "Partner %s, must have VAT Number or Fiscal Code"
