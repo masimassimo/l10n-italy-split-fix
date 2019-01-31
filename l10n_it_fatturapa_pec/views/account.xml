@@ -38,4 +38,15 @@
             </xpath>
         </field>
     </record>
+
+    <record id="view_invoice_form_fatturapa_context" model="ir.ui.view">
+        <field name="name">view_invoice_form_fatturapa_context</field>
+        <field name="model">account.invoice</field>
+        <field name="inherit_id" ref="l10n_it_fatturapa_out.view_invoice_form_fatturapa"></field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='fatturapa_attachment_out_id']" position="attributes">
+                <attribute name="context">{'e_inv_export_state_clickable': True}</attribute>
+            </xpath>
+        </field>
+    </record>
 </odoo>

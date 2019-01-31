@@ -30,7 +30,7 @@ class FatturaPAAttachmentOut(models.Model):
                               ('validated', 'Delivered'),
                               ],
                              string='State',
-                             default='ready',)
+                             default='ready', track_visibility='onchange')
 
     last_sdi_response = fields.Text(
         string='Last Response from Exchange System', default='No response yet',
@@ -258,3 +258,20 @@ class FatturaPAAttachmentOut(models.Model):
                     "You can only delete 'ready to send' files"
                 ))
         return super(FatturaPAAttachmentOut, self).unlink()
+
+    @api.multi
+    def write(self, vals):
+        if 'state' in vals and self.env.context.get(
+            'e_inv_export_state_clickable'
+        ):
+            group_force_e_inv_export_state = self.env.ref(
+                'l10n_it_fatturapa_pec.group_force_e_inv_export_state')
+            if (
+                group_force_e_inv_export_state.id not in
+                self.env.user.groups_id.ids
+            ):
+                raise UserError(_(
+                    "User %s can't change state e-invoice export state"
+                ) % self.env.user.name)
+        res = super(FatturaPAAttachmentOut, self).write(vals)
+        return res
