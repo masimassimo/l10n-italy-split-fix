@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Copyright 2019 Simone Rubino
+  License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+  -->
+<odoo>
+    <template id="assets_frontend" inherit_id="website.assets_frontend" name="Website Portal Electronic Invoice">
+        <xpath expr="." position="inside">
+            <script type="text/javascript" src="/l10n_it_website_portal_fatturapa/static/src/js/l10n_it_website_portal_fatturapa.js"/>
+        </xpath>
+    </template>
+
+    <template id="fatturapa_details" name="Add fatturapa fields" inherit_id="l10n_it_website_portal_fiscalcode.fiscalcode_details">
+        <xpath expr="//input[@name='name']/.." position="attributes">
+            <attribute name="t-attf-class" separator=" " add="#{'o_hidden' if not partner.is_company else ''}"/>
+        </xpath>
+        <xpath expr="//input[@name='name']/.." position="after">
+            <t t-if="not partner.is_company">
+                <div class="clearfix"/>
+                <div t-attf-class="form-group #{error.get('firstname') and 'has-error' or ''} col-lg-6">
+                    <label class="control-label label-optional" for="firstname">
+                        Your First Name
+                    </label>
+                    <input type="text" name="firstname" class="form-control"
+                           t-att-value="firstname or partner.firstname"/>
+                </div>
+                <div t-attf-class="form-group #{error.get('lastname') and 'has-error' or ''} col-lg-6">
+                    <label class="control-label label-optional" for="lastname">
+                        Your Last Name
+                    </label>
+                    <input type="text" name="lastname" class="form-control"
+                           t-att-value="lastname or partner.lastname"/>
+                </div>
+                <div class="clearfix"/>
+            </t>
+        </xpath>
+        <xpath expr="//input[@name='email']/.." position="after">
+            <div t-attf-class="form-group #{error.get('pec_mail') and 'has-error' or ''} col-lg-6">
+                <label class="control-label label-optional" for="pec_mail">
+                    Your PEC address
+                </label>
+                <input type="text" name="pec_mail" class="form-control"
+                       t-att-value="pec_mail or partner.pec_mail"/>
+            </div>
+        </xpath>
+        <xpath expr="//input[@name='fiscalcode']/.." position="after">
+            <div t-attf-class="form-group #{error.get('codice_destinatario') and 'has-error' or ''} col-lg-6">
+                <label class="control-label label-optional" for="codice_destinatario">
+                    Your Addressee code
+                </label>
+                <input type="text" name="codice_destinatario" class="form-control"
+                       t-att-value="codice_destinatario or partner.codice_destinatario"/>
+            </div>
+            <div t-attf-class="form-group #{error.get('is_pa') and 'has-error' or ''} col-lg-6">
+                <label class="control-label label-optional" for="is_pa">
+                    Are you acting on behalf of a Public Administration?
+                </label>
+                <input type="checkbox" name="is_pa" class="form-control"
+                       style="width: auto;"
+                       t-att-checked="is_pa or bool(partner.is_pa)"
+                       t-att-value="is_pa or bool(partner.is_pa)"/>
+                <!-- Used to post is_pa field even if it is False,
+                see https://stackoverflow.com/questions/1809494/post-unchecked-html-checkboxes/1992745#1992745-->
+                <input type="hidden" name="is_pa" t-att-value="False"/>
+            </div>
+            <div t-attf-class="form-group #{error.get('ipa_code') and 'has-error' or ''} col-lg-6 div_ipa_code">
+                <label class="control-label label-optional" for="ipa_code">
+                    Your IPA code
+                </label>
+                <input type="text" name="ipa_code" class="form-control"
+                       t-att-value="ipa_code or partner.ipa_code"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>
