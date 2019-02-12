@@ -35,7 +35,7 @@ class ComunicazioneDatiIvaExportFile(models.TransientModel):
                 wizard.filename = filename
             model_data_obj = self.env['ir.model.data']
             view_rec = model_data_obj.get_object_reference(
-                'l10n_it_comunicazione_dati_iva',
+                'l10n_it_invoices_data_communication',
                 'wizard_dati_iva_export_file_exit'
             )
             view_id = view_rec and view_rec[1] or False
