@@ -35,12 +35,12 @@
             </t>
         </xpath>
         <xpath expr="//input[@name='email']/.." position="after">
-            <div t-attf-class="form-group #{error.get('pec_mail') and 'has-error' or ''} col-lg-6">
-                <label class="control-label label-optional" for="pec_mail">
-                    Your PEC address
+            <div t-attf-class="form-group #{error.get('pec_destinatario') and 'has-error' or ''} col-lg-6">
+                <label class="control-label label-optional" for="pec_destinatario">
+                    Your PEC address for Electronic invoicing
                 </label>
-                <input type="text" name="pec_mail" class="form-control"
-                       t-att-value="pec_mail or partner.pec_mail"/>
+                <input type="text" name="pec_destinatario" class="form-control"
+                       t-att-value="pec_destinatario or partner.pec_destinatario"/>
             </div>
         </xpath>
         <xpath expr="//input[@name='fiscalcode']/.." position="after">

@@ -12,7 +12,6 @@
     "license": "AGPL-3",
     "depends": [
         "l10n_it_fatturapa",
-        "l10n_it_pec",
         "l10n_it_website_portal_fiscalcode"
     ],
     "data": [
