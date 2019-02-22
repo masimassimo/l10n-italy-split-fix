@@ -5,6 +5,7 @@ from odoo.exceptions import ValidationError
 from odoo.http import request
 from odoo.addons.l10n_it_website_portal_fiscalcode.controllers.main import \
     WebsitePortalFiscalCode
+from odoo.tools.translate import _
 
 FATTURAPA_PORTAL_FIELDS = \
     ['is_pa', 'ipa_code', 'codice_destinatario', 'firstname', 'lastname',
@@ -17,16 +18,21 @@ class WebsitePortalFatturapa(WebsitePortalFiscalCode):
     def details_form_validate(self, data):
         error, error_message = \
             super(WebsitePortalFatturapa, self).details_form_validate(data)
-        partner_model = request.env['res.partner']
         partner_sudo = request.env.user.partner_id.sudo()
-        # Compute name field, using First name and Last name
-        if all(f in data for f in ['name', 'firstname', 'lastname']):
-            partner_model = request.env['res.partner']
-            data.update(
-                name=partner_model._get_computed_name(
-                    data['lastname'],
-                    data['firstname']))
+        error, error_message = \
+            self.validate_partner_firstname(data, error, error_message)
 
+        partner_values = self.get_portal_fatturapa_partner_values(
+            data, partner_sudo)
+        dummy_partner = request.env['res.partner'].new(partner_values)
+        try:
+            dummy_partner._check_ftpa_partner_data()
+        except ValidationError as ve:
+            error['error'] = 'error'
+            error_message.append(ve.name)
+        return error, error_message
+
+    def get_portal_fatturapa_partner_values(self, data, partner_sudo):
         # Read all the fields for the constraint from the current user
         constr_fields = partner_sudo._check_ftpa_partner_data._constrains
         partner_values = partner_sudo.read(constr_fields)[0]
@@ -39,12 +45,21 @@ class WebsitePortalFatturapa(WebsitePortalFiscalCode):
                 int(new_partner_values['country_id'])
         new_partner_values.update({
             'zip': new_partner_values.pop('zipcode', '')})
-
         partner_values.update(new_partner_values)
-        dummy_partner = partner_model.new(partner_values)
-        try:
-            dummy_partner._check_ftpa_partner_data()
-        except ValidationError as ve:
-            error['error'] = 'Error'
-            error_message.append(ve.name)
+        return partner_values
+
+    def validate_partner_firstname(self, data, error, error_message):
+        # Compute name field, using First name and Last name
+        if all(f in data for f in ['name', 'firstname', 'lastname']):
+            lastname = data.get('lastname')
+            firstname = data.get('firstname')
+            if lastname or firstname:
+                data.update(
+                    name=request.env['res.partner']._get_computed_name(
+                        lastname, firstname))
+            else:
+                error['firstname'] = 'error'
+                error['lastname'] = 'error'
+                error_message.append(
+                    _('At least one of first name and last name is required'))
         return error, error_message
