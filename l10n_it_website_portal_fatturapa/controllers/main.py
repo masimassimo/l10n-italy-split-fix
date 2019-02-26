@@ -40,8 +40,7 @@ class WebsitePortalFatturapa(WebsitePortalFiscalCode):
         # Update them with fields that might be edited by the user
         new_partner_values = {f_name: data.get(f_name)
                               for f_name in FATTURAPA_PORTAL_FIELDS}
-        if 'country_id' in new_partner_values \
-                and new_partner_values.get('country_id'):
+        if new_partner_values.get('country_id'):
             new_partner_values['country_id'] = \
                 int(new_partner_values['country_id'])
         new_partner_values.update({
