@@ -34,16 +34,8 @@
                 <div class="clearfix"/>
             </t>
         </xpath>
-        <xpath expr="//input[@name='email']/.." position="after">
-            <div t-attf-class="form-group #{error.get('pec_destinatario') and 'has-error' or ''} col-lg-6">
-                <label class="control-label label-optional" for="pec_destinatario">
-                    Your PEC address for Electronic invoicing
-                </label>
-                <input type="text" name="pec_destinatario" class="form-control"
-                       t-att-value="pec_destinatario or partner.pec_destinatario"/>
-            </div>
-        </xpath>
         <xpath expr="//input[@name='fiscalcode']/.." position="after">
+            <div class="clearfix"/>
             <div t-attf-class="form-group #{error.get('codice_destinatario') and 'has-error' or ''} col-lg-6">
                 <label class="control-label label-optional" for="codice_destinatario">
                     Your Addressee code
@@ -51,6 +43,14 @@
                 <input type="text" name="codice_destinatario" class="form-control"
                        t-att-value="codice_destinatario or partner.codice_destinatario"/>
             </div>
+            <div t-attf-class="form-group #{error.get('pec_destinatario') and 'has-error' or ''} col-lg-6">
+                <label class="control-label label-optional" for="pec_destinatario">
+                    Your PEC address for Electronic invoicing
+                </label>
+                <input type="text" name="pec_destinatario" class="form-control"
+                       t-att-value="pec_destinatario or partner.pec_destinatario"/>
+            </div>
+            <div class="clearfix"/>
             <div t-attf-class="form-group #{error.get('is_pa') and 'has-error' or ''} col-lg-6">
                 <label class="control-label label-optional" for="is_pa">
                     Are you acting on behalf of a Public Administration?
@@ -70,6 +70,7 @@
                 <input type="text" name="ipa_code" class="form-control"
                        t-att-value="ipa_code or partner.ipa_code"/>
             </div>
+            <div class="clearfix"/>
         </xpath>
     </template>
 </odoo>
