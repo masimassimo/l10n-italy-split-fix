@@ -8,7 +8,7 @@ from odoo.addons.l10n_it_website_portal_fiscalcode.controllers.main import \
 from odoo.tools.translate import _
 
 FATTURAPA_PORTAL_FIELDS = \
-    ['is_pa', 'ipa_code', 'codice_destinatario', 'firstname', 'lastname',
+    ['codice_destinatario', 'firstname', 'lastname',
      'pec_destinatario', 'country_id', 'fiscalcode', 'zipcode', 'vat']
 WebsitePortalFiscalCode.OPTIONAL_BILLING_FIELDS.extend(FATTURAPA_PORTAL_FIELDS)
 
