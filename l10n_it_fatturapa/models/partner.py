@@ -93,11 +93,11 @@ class ResPartner(models.Model):
                         ) % (partner.name,
                              partner.pec_destinatario,
                              STANDARD_ADDRESSEE_CODE))
-                else:
-                    if partner.codice_destinatario == STANDARD_ADDRESSEE_CODE:
+                if partner.codice_destinatario == STANDARD_ADDRESSEE_CODE:
+                    if not partner.pec_destinatario:                    
                         raise ValidationError(_(
-                            "Partner %s does not have the Addressee PEC, "
-                            "the Addresse Code must not be %s."
+                            "Partner %s has Addressee Code %s, "
+                            "the Addresse PEC must not be empty."
                         ) % (partner.name,
                              STANDARD_ADDRESSEE_CODE))
                 if (
