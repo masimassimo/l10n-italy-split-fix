@@ -7,7 +7,7 @@
             <field name="inherit_id" ref="l10n_it_fiscal_document_type.view_account_inv_supp_fiscal_document_type"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='fiscal_document_type_id']" position="after">
-                        <field name="comunicazione_dati_iva_escludi" class="oe_inline" />
+                        <field name="communication_invoices_data_escludi" class="oe_inline" />
                 </xpath>
             </field>
         </record>
@@ -19,7 +19,7 @@
             <field name="inherit_id" ref="l10n_it_fiscal_document_type.view_account_inv_cus_fiscal_document_type"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='fiscal_document_type_id']" position="after">
-                        <field name="comunicazione_dati_iva_escludi" class="oe_inline" />
+                        <field name="communication_invoices_data_escludi" class="oe_inline" />
                 </xpath>
             </field>
         </record>

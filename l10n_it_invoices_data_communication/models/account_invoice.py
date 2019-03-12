@@ -8,7 +8,7 @@ from odoo.exceptions import ValidationError
 class account_invoice(models.Model):
     _inherit = "account.invoice"
 
-    comunicazione_dati_iva_escludi = fields.Boolean(
+    communication_invoices_data_escludi = fields.Boolean(
         string='Escludi dalla dichiarazione IVA', default=False)
 
     def _compute_taxes_in_company_currency(self, vals):
@@ -21,7 +21,7 @@ class account_invoice(models.Model):
         vals['ImponibileImporto'] = vals['ImponibileImporto'] / exchange_rate
         vals['Imposta'] = vals['Imposta'] / exchange_rate
 
-    def _get_tax_comunicazione_dati_iva(self):
+    def _get_tax_communication_invoices_data(self):
         self.ensure_one()
         fattura = self
         tax_model = self.env['account.tax']
@@ -73,13 +73,13 @@ class account_invoice(models.Model):
                     )
                 else:
                     vals['Detraibile'] = 0.0
-            vals = self._check_tax_comunicazione_dati_iva(tax, vals)
+            vals = self._check_tax_communication_invoices_data(tax, vals)
             fattura._compute_taxes_in_company_currency(vals)
             tax_lines.append((0, 0, vals))
 
         return tax_lines
 
-    def _check_tax_comunicazione_dati_iva(self, tax, val=None):
+    def _check_tax_communication_invoices_data(self, tax, val=None):
         if not val:
             val = {}
         if val['Aliquota'] == 0 and not val['Natura_id']:

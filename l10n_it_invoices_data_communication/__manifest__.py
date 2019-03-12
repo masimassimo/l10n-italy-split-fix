@@ -6,7 +6,7 @@
 {
     'name': 'Italian Localization - Comunicazione dati fatture',
     'summary': 'Comunicazione dati fatture (c.d. "nuovo spesometro")',
-    'version': '10.0.1.0.0',
+    'version': '10.0.1.1.0',
     'category': 'Account',
     'author': "Openforce di Camilli Alessandro, "
               "Odoo Community Association (OCA)",
