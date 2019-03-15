@@ -93,13 +93,6 @@ class ResPartner(models.Model):
                         ) % (partner.name,
                              partner.pec_destinatario,
                              STANDARD_ADDRESSEE_CODE))
-                if partner.codice_destinatario == STANDARD_ADDRESSEE_CODE:
-                    if not partner.pec_destinatario:                    
-                        raise ValidationError(_(
-                            "Partner %s has Addressee Code %s, "
-                            "the Addresse PEC must not be empty."
-                        ) % (partner.name,
-                             STANDARD_ADDRESSEE_CODE))
                 if (
                     not partner.vat and not partner.fiscalcode and
                     partner.country_id.code == 'IT'
