@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright 2019 Simone Rubino
+# Copyright 2019 Lorenzo Battistini
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 from odoo.exceptions import ValidationError
 from odoo.http import request
@@ -9,13 +10,18 @@ from odoo.tools.translate import _
 
 FATTURAPA_PORTAL_FIELDS = \
     ['codice_destinatario', 'firstname', 'lastname',
-     'pec_destinatario', 'country_id', 'fiscalcode', 'zipcode', 'vat']
+     'pec_destinatario', 'country_id', 'fiscalcode', 'zipcode', 'vat',
+     'electronic_invoice_subjected', 'street', 'city']
 WebsitePortalFiscalCode.OPTIONAL_BILLING_FIELDS.extend(FATTURAPA_PORTAL_FIELDS)
 
 
 class WebsitePortalFatturapa(WebsitePortalFiscalCode):
 
     def details_form_validate(self, data):
+        # when checkbox electronic_invoice_subjected is not checked,
+        # it is not posted
+        data['electronic_invoice_subjected'] = data.get(
+            'electronic_invoice_subjected', False)
         error, error_message = \
             super(WebsitePortalFatturapa, self).details_form_validate(data)
         partner_sudo = request.env.user.partner_id.sudo()
