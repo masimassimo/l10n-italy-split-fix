@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 import base64
 from odoo import api, fields, models, exceptions
@@ -17,13 +16,13 @@ class ComunicazioneLiquidazioneExportFile(models.TransientModel):
         comunicazione_ids = self._context.get('active_ids')
         if not comunicazione_ids:
             raise exceptions.Warning(
-                u'Attenzione! '
-                u"Nessuna comunicazione selezionata"
+                'Attenzione! '
+                "Nessuna comunicazione selezionata"
             )
         if len(comunicazione_ids) > 1:
             raise exceptions.Warning(
-                u'Attenzione! '
-                u"E' possibile esportare una sola comunicazione alla volta"
+                'Attenzione! '
+                "E' possibile esportare una sola comunicazione alla volta"
             )
 
         for wizard in self:
