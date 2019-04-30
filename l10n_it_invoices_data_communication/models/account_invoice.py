@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
-from odoo import fields, models, _
-from odoo.exceptions import ValidationError
+from openerp import fields, models, _
+from openerp.exceptions import ValidationError, Warning as UserError
 
 
 class AccountInvoice(models.Model):
@@ -12,10 +12,16 @@ class AccountInvoice(models.Model):
         string='Exclude from invoices communication')
 
     def _compute_taxes_in_company_currency(self, vals):
+        sign = 1 if self.type in ('out_invoice', 'in_refund') else -1
+        amount_total_signed = sign * self.amount_total
+        currency_id = self.currency_id.with_context(date=self.date_invoice)
+        amount_total_company = currency_id.compute(
+            self.amount_total, self.company_id.currency_id)
+        amount_total_company_signed = sign * amount_total_company
         try:
             exchange_rate = (
-                self.amount_total_signed /
-                self.amount_total_company_signed)
+                amount_total_signed /
+                amount_total_company_signed)
         except ZeroDivisionError:
             exchange_rate = 1
         vals['ImponibileImporto'] = vals['ImponibileImporto'] / exchange_rate
@@ -28,10 +34,17 @@ class AccountInvoice(models.Model):
 
         tax_lines = []
         tax_grouped = {}
-        for tax_line in fattura.tax_line_ids:
-            tax = tax_line.tax_id
+        for tax_line in fattura.tax_line:
+            tax = tax_model.search([
+                ('tax_code_id', '=', tax_line.tax_code_id.id)
+            ], limit=1)
+            if not tax:
+                raise UserError(
+                    _("Tax with code {tax_code} not found")
+                    .format(
+                        tax_code=tax_line.tax_code_id.display_name))
             aliquota = tax.amount
-            parent = tax_model.search([('children_tax_ids', 'in', [tax.id])])
+            parent = tax_model.search([('child_ids', 'in', [tax.id])])
             if parent:
                 main_tax = parent
                 aliquota = parent.amount
@@ -54,8 +67,9 @@ class AccountInvoice(models.Model):
                     tax_grouped[main_tax.id]['Detraibile'] = 100.0
             else:
                 tax_grouped[main_tax.id]['Imposta'] += imposta
-            if tax.account_id:
-                # account_id è valorizzato per la parte detraibile dell'imposta
+            if tax.account_collected_id:
+                # account_collected_id è valorizzato per la parte
+                # detraibile dell'imposta
                 # In questa tax_line è presente il totale dell'imponibile
                 # per l'imposta corrente
                 tax_grouped[main_tax.id]['ImponibileImporto'] += base
@@ -63,9 +77,9 @@ class AccountInvoice(models.Model):
         for tax_id in tax_grouped:
             tax = tax_model.browse(tax_id)
             vals = tax_grouped[tax_id]
-            if tax.children_tax_ids:
+            if tax.child_ids:
                 parte_detraibile = 0.0
-                for child_tax in tax.children_tax_ids:
+                for child_tax in tax.child_ids:
                     if child_tax.account_id:
                         parte_detraibile = child_tax.amount
                         break
