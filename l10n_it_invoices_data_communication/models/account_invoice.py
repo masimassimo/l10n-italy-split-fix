@@ -38,11 +38,11 @@ class AccountInvoice(models.Model):
             tax_id = tax_line.tax_code_id.get_tax_by_tax_code()
             tax = tax_model.browse(tax_id)
 
-            aliquota = tax.amount
+            aliquota = tax.amount * 100
             parent = tax_model.search([('child_ids', 'in', [tax.id])])
             if parent:
                 main_tax = parent
-                aliquota = parent.amount
+                aliquota = parent.amount * 100
             else:
                 main_tax = tax
             kind_id = main_tax.kind_id.id
@@ -76,7 +76,7 @@ class AccountInvoice(models.Model):
                 parte_detraibile = 0.0
                 for child_tax in tax.child_ids:
                     if child_tax.account_id:
-                        parte_detraibile = child_tax.amount
+                        parte_detraibile = child_tax.amount * 100
                         break
                 if vals['Aliquota'] and parte_detraibile:
                     vals['Detraibile'] = (
