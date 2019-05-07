@@ -514,7 +514,7 @@ class ComunicazioneDatiIva(models.Model):
                     'dati_fattura_DataRegistrazione':
                         fattura.date_invoice,
                     'dati_fattura_Numero': self._parse_fattura_numero(
-                        fattura.reference) or '',
+                        fattura.supplier_invoice_number) or '',
                     'dati_fattura_iva_ids':
                         fattura._get_tax_comunicazione_dati_iva()
                 }
@@ -2485,7 +2485,8 @@ class ComunicazioneDatiIvaFattureRicevuteBody(models.Model):
                 fattura.dati_fattura_TipoDocumento = \
                     fattura.invoice_id.fiscal_document_type_id and \
                     fattura.invoice_id.fiscal_document_type_id.id or False
-                fattura.dati_fattura_Numero = fattura.invoice_id.number
+                fattura.dati_fattura_Numero = \
+                    fattura.invoice_id.supplier_invoice_number
                 fattura.dati_fattura_Data = fattura.invoice_id.date_invoice
                 fattura.dati_fattura_DataRegistrazione = \
                     fattura.invoice_id.date_invoice
