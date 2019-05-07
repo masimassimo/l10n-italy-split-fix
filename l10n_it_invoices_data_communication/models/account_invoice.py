@@ -2,7 +2,7 @@
 
 
 from openerp import fields, models, _
-from openerp.exceptions import ValidationError, Warning as UserError
+from openerp.exceptions import ValidationError
 
 
 class AccountInvoice(models.Model):
@@ -35,14 +35,9 @@ class AccountInvoice(models.Model):
         tax_lines = []
         tax_grouped = {}
         for tax_line in fattura.tax_line:
-            tax = tax_model.search([
-                ('tax_code_id', '=', tax_line.tax_code_id.id)
-            ], limit=1)
-            if not tax:
-                raise UserError(
-                    _("Tax with code {tax_code} not found")
-                    .format(
-                        tax_code=tax_line.tax_code_id.display_name))
+            tax_id = tax_line.tax_code_id.get_tax_by_tax_code()
+            tax = tax_model.browse(tax_id)
+
             aliquota = tax.amount
             parent = tax_model.search([('child_ids', 'in', [tax.id])])
             if parent:
