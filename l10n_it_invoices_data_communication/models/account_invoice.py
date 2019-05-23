@@ -75,8 +75,8 @@ class AccountInvoice(models.Model):
             if tax.child_ids:
                 parte_detraibile = 0.0
                 for child_tax in tax.child_ids:
-                    if child_tax.account_collected_id:
-                        parte_detraibile = child_tax.amount * 100
+                    if not child_tax.account_collected_id:
+                        parte_detraibile = (1 - child_tax.amount) * 100.0
                         break
                 if vals['Aliquota'] and parte_detraibile:
                     vals['Detraibile'] = (
