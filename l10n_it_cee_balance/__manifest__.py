@@ -21,7 +21,10 @@
     "data": [
         "security/ir.model.access.csv",
         "views/account_view.xml",
-        "data/cee_groups.xml"
+        "wizard/report_cee_balance.xml",
+        "data/cee_groups.xml",
+        "report/templates/cee_balance_report.xml",
+        "reports.xml"
     ],
     "qweb": [
     ]
