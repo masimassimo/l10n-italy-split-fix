@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2019 Lorenzo Battistini
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl).
 
@@ -7,9 +6,9 @@
             'E-fattura integrazione',
     'summary': 'Integrazione fatturazione elettronica e Comunicazione dati '
                'fatture (c.d. "nuovo spesometro")',
-    'version': '10.0.1.0.0',
+    'version': '12.0.1.0.0',
     'category': 'Hidden',
-    'author': "Agile Business Group, "
+    'author': "Agile Business Group, TAKOBI, "
               "Odoo Community Association (OCA)",
     'website': 'https://github.com/OCA/l10n-italy/',
     'license': 'LGPL-3',
