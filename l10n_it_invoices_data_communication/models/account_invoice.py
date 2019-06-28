@@ -78,15 +78,13 @@ class AccountInvoice(models.Model):
             tax = tax_model.browse(tax_id)
             vals = tax_grouped[tax_id]
             if tax.child_ids:
-                parte_detraibile = 0.0
+                perc_detraibile = 0.0
                 for child_tax in tax.child_ids:
                     if not child_tax.account_collected_id:
-                        parte_detraibile = (1 - child_tax.amount) * 100.0
+                        perc_detraibile = (1 - child_tax.amount) * 100.0
                         break
-                if vals['Aliquota'] and parte_detraibile:
-                    vals['Detraibile'] = (
-                        100 / (vals['Aliquota'] / parte_detraibile)
-                    )
+                if vals['Aliquota'] and perc_detraibile:
+                    vals['Detraibile'] = perc_detraibile
                 else:
                     vals['Detraibile'] = 0.0
             vals = self._check_tax_comunicazione_dati_iva(tax, vals)
