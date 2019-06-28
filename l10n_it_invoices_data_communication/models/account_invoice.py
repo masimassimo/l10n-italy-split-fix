@@ -67,7 +67,7 @@ class AccountInvoice(models.Model):
                     tax_grouped[main_tax.id]['Detraibile'] = 100.0
             else:
                 tax_grouped[main_tax.id]['Imposta'] += imposta
-            if tax.account_collected_id:
+            if not tax.account_collected_id:
                 # account_collected_id è valorizzato per la parte
                 # detraibile dell'imposta
                 # In questa tax_line è presente il totale dell'imponibile
