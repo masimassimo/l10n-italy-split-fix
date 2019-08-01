@@ -4,7 +4,7 @@ Consultare il modulo `l10n_it_sdi_channel`.
 
 Lo stato dell'esportazione XML può essere forzato impostando 'Permettere di forzare lo stato dell'esportazione e-fattura' nelle impostazioni tecniche dell'utente.
 
-In caso di multi azienda, specificare, in
+Specificare, in
 
 Contabilità → Configurazione → Impostazioni → Fattura elettronica
 
@@ -14,10 +14,10 @@ per ogni azienda, l'utente che sarà utilizzato come creatore delle e-fatture pa
 
 See `l10n_it_sdi_channel` module.
 
-XML export state can ba forced setting 'Allow to force e-invoice export state' in user's technical settings.
+XML export state can ba forced setting 'Allow to force the supplier e-bill export state' in user's technical settings.
 
-In case of multi company, in
+In
 
 Contabilità → Configurazione → Impostazioni → Fattura elettronica
 
-set, for every company, the user who will be used as creator of supplier e-invoices automatically created from PEC.
+set, for every company, the user who will be used as creator of supplier e-bill automatically created from PEC.
