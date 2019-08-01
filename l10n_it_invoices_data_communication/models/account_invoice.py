@@ -28,70 +28,80 @@ class AccountInvoice(models.Model):
         vals['Imposta'] = vals['Imposta'] / exchange_rate
 
     def _get_tax_comunicazione_dati_iva(self):
-        self.ensure_one()
-        fattura = self
-        tax_model = self.env['account.tax']
-
-        tax_lines = []
-        tax_grouped = {}
-        for tax_line in fattura.tax_line:
-            tax = tax_model.search([
-                ('tax_code_id', '=', tax_line.tax_code_id.id)
-            ], limit=1)
-            if not tax:
-                raise UserError(
-                    _("Tax with code {tax_code} not found")
-                    .format(
-                        tax_code=tax_line.tax_code_id.display_name))
-            aliquota = tax.amount * 100
-            parent = tax_model.search([('child_ids', 'in', [tax.id])])
-            if parent:
-                main_tax = parent
-                aliquota = parent.amount * 100
-            else:
-                main_tax = tax
-            kind_id = main_tax.kind_id.id
-            payability = main_tax.payability
-            imposta = tax_line.amount
-            base = tax_line.base
-            if main_tax.id not in tax_grouped:
-                tax_grouped[main_tax.id] = {
-                    'ImponibileImporto': 0,
-                    'Imposta': imposta,
+        for fattura in self:
+            tax_lines = []
+            tax_grouped = {}
+            tot_imponibile = 0
+            tot_imposta = 0
+            for tax_line in fattura.tax_line:
+                # aliquota, natura, esigibilità
+                aliquota = 0
+                kind_id = False
+                payability = False
+                domain = [('tax_code_id', '=', tax_line.tax_code_id.id)]
+                tax = self.env['account.tax'].search(
+                    domain, order='id', limit=1)
+                tax_origin = tax
+                if tax.parent_id:
+                    tax = tax.parent_id
+                if tax:
+                    aliquota = tax.amount * 100
+                    kind_id = tax.kind_id.id
+                    payability = tax.payability
+                vals_tax_line = \
+                    fattura._get_tax_comunicazione_dati_iva_tax_line_amount(
+                        tax_line)
+                val = {
+                    'ImponibileImporto': vals_tax_line['base'],
+                    'Imposta': vals_tax_line['amount'],
                     'Aliquota': aliquota,
                     'Natura_id': kind_id,
-                    'EsigibilitaIVA': payability,
-                    'Detraibile': 0.0,
+                    'EsigibilitaIVA': payability
                 }
-                if fattura.type in ('in_invoice', 'in_refund'):
-                    tax_grouped[main_tax.id]['Detraibile'] = 100.0
-            else:
-                tax_grouped[main_tax.id]['Imposta'] += imposta
-            if not tax.account_collected_id:
-                # account_collected_id è valorizzato per la parte
-                # detraibile dell'imposta
-                # In questa tax_line è presente il totale dell'imponibile
-                # per l'imposta corrente
-                tax_grouped[main_tax.id]['ImponibileImporto'] += base
+                # Detraibilità
+                detraibilita = False
+                if tax_origin.parent_id and tax_origin.type in ['percent']:
+                    if tax_origin.account_collected_id:
+                        detraibilita = tax_origin.amount * 100
+                    else:
+                        detraibilita = 100 - (tax_origin.amount * 100)
+                if detraibilita:
+                    val['Detraibile'] = detraibilita
+                # Solo imponibile legato alla parte indetraibile
+                if tax_origin.parent_id:
+                    if not tax_line.base_code_id:
+                        val['ImponibileImporto'] = 0
 
-        for tax_id in tax_grouped:
-            tax = tax_model.browse(tax_id)
-            vals = tax_grouped[tax_id]
-            if tax.child_ids:
-                perc_detraibile = 0.0
-                for child_tax in tax.child_ids:
-                    if not child_tax.account_collected_id:
-                        perc_detraibile = (1 - child_tax.amount) * 100.0
-                        break
-                if vals['Aliquota'] and perc_detraibile:
-                    vals['Detraibile'] = perc_detraibile
+                tot_imponibile += val['ImponibileImporto']
+                tot_imposta += val['Imposta']
+                if not tax.id in tax_grouped:
+                    tax_grouped[tax.id] = val
                 else:
-                    vals['Detraibile'] = 0.0
-            vals = self._check_tax_comunicazione_dati_iva(tax, vals)
-            fattura._compute_taxes_in_company_currency(vals)
-            tax_lines.append((0, 0, vals))
-
+                    tax_grouped[tax.id]['ImponibileImporto'] += \
+                        val['ImponibileImporto']
+                    tax_grouped[tax.id]['Imposta'] += val['Imposta']
+            if tax_grouped:
+                for key in tax_grouped:
+                    val = tax_grouped[key]
+                    val = self._check_tax_comunicazione_dati_iva(key, val)
+                    tax_lines.append((0, 0, val))
+            tot_vals = {
+                'tot_imponibile': tot_imponibile,
+                'tot_imposta': tot_imposta
+            }
+            fattura._check_tax_comunicazione_dati_iva_fattura(tot_vals)
         return tax_lines
+
+    def _get_tax_comunicazione_dati_iva_tax_line_amount(self, tax_line):
+        vals = {
+            'base': abs(tax_line.base_amount),
+            'amount': abs(tax_line.tax_amount)
+        }
+        # Gestione righe negative
+        if tax_line.base < 0 or 'refund' in self.type:
+            vals['base'] = vals['base'] * -1
+            vals['amount'] = vals['amount'] * -1
+        return vals
 
     def _check_tax_comunicazione_dati_iva(self, tax, val=None):
         self.ensure_one()
@@ -108,3 +118,25 @@ class AccountInvoice(models.Model):
                     "Please specify VAT payability for tax: {} - Invoice {}"
                 ).format(tax.name, self.number or False))
         return val
+
+    def _check_tax_comunicazione_dati_iva_fattura(self, args=None):
+        if (
+                self.currency_id and
+                self.currency_id.id != self.company_id.currency_id.id
+        ):
+            # in caso di fatture in valuta estera, non controllo amount_untaxed
+            # perchè sarebbe comunque diverso dall'importo in valuta base
+            return
+        if not args:
+            args = {}
+
+        if 'tot_imponibile' in args:
+            if not abs(round(self.amount_untaxed, 2)) == \
+                   abs(round(args['tot_imponibile'], 2)):
+                raise ValidationError(
+                    _("Imponibile ft {} del partner {} non congruente. \
+                    Verificare dettaglio sezione imposte della fattura (\
+                    imponible doc:{} - imponibile dati iva:{})"
+                      ).format(self.number, self.partner_id.name,
+                               str(self.amount_untaxed),
+                               str(args['tot_imponibile'])))
