@@ -111,7 +111,7 @@ class WizardExportFatturapa(models.TransientModel):
         domain=_domain_ir_values,
         help='This report will be automatically included in the created XML')
 
-    def saveAttachment(self, fatturapa, number):
+    def saveAttachment(self, fatturapa, number, existing_attachment=None):
         attach_obj = self.env['fatturapa.attachment.out']
         vat = attach_obj.get_file_vat()
 
@@ -125,7 +125,11 @@ class WizardExportFatturapa(models.TransientModel):
             'datas_fname': '%s_%s.xml' % (vat, number),
             'datas': base64.encodestring(attach_str),
         }
-        return attach_obj.create(attach_vals)
+        if existing_attachment:
+            existing_attachment.write(attach_vals)
+            return existing_attachment
+        else:
+            return attach_obj.create(attach_vals)
 
     def setProgressivoInvio(self, fatturapa):
 
@@ -848,6 +852,11 @@ class WizardExportFatturapa(models.TransientModel):
         invoice_obj = self.env['account.invoice']
         invoices_by_partner = self.group_invoices_by_partner()
         attachments = self.env['fatturapa.attachment.out']
+        attachment_to_overwrite = None
+        if len(invoices_by_partner.keys()) == 1 and self.env.context.get(
+                'attachment_to_overwrite_id'):
+            attachment_to_overwrite = attachments.browse(
+                self.env.context['attachment_to_overwrite_id'])
         for partner_id in invoices_by_partner:
             invoice_ids = invoices_by_partner[partner_id]
             partner = self.getPartnerId(invoice_ids)
@@ -865,7 +874,10 @@ class WizardExportFatturapa(models.TransientModel):
                 for invoice_id in invoice_ids:
                     inv = invoice_obj.with_context(context_partner).browse(
                         invoice_id)
-                    if inv.fatturapa_attachment_out_id:
+                    if (
+                        inv.fatturapa_attachment_out_id
+                        and not attachment_to_overwrite
+                    ):
                         raise UserError(
                             _("Invoice %s has e-invoice export file yet.") % (
                                 inv.number))
@@ -884,7 +896,8 @@ class WizardExportFatturapa(models.TransientModel):
             except (SimpleFacetValueError, SimpleTypeValueError) as e:
                 raise UserError(str(e))
 
-            attach = self.saveAttachment(fatturapa, number)
+            attach = self.saveAttachment(
+                fatturapa, number, attachment_to_overwrite)
             attachments |= attach
 
             for invoice_id in invoice_ids:
