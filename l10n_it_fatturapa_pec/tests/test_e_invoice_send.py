@@ -32,6 +32,14 @@ class TestEInvoiceSend(EInvoiceCommon):
         e_invoice.send_via_pec()
         self.assertEqual(e_invoice.state, 'sender_error')
 
+        # Generate XML again
+        export_action = e_invoice.generate_xml_again()
+        wiz = self.env['wizard.export.fatturapa'].with_context(
+            export_action['context']).create({})
+        res = wiz.exportFatturaPA()
+        self.assertEqual(res['res_id'], e_invoice.id)
+        self.assertEqual(e_invoice.state, 'ready')
+
     def test_send(self):
         """Sending e-invoice changes its state to 'sent'"""
         e_invoice = self._create_e_invoice()

@@ -12,6 +12,7 @@ from lxml import etree
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 from odoo.addons.base.models.ir_mail_server import MailDeliveryException
+from odoo.tools.safe_eval import safe_eval
 
 _logger = logging.getLogger(__name__)
 
@@ -250,3 +251,15 @@ class FatturaPAAttachmentOut(models.Model):
                     "You can only delete files in 'Ready to Send' state."
                 ))
         return super(FatturaPAAttachmentOut, self).unlink()
+
+    @api.multi
+    def generate_xml_again(self):
+        self.ensure_one()
+        action = self.env.ref(
+            'l10n_it_fatturapa_out.action_wizard_export_fatturapa')
+        action_vals = action.read()[0]
+        ctx = safe_eval(action_vals['context'])
+        ctx['active_ids'] = self.out_invoice_ids.ids
+        ctx['attachment_to_overwrite_id'] = self.id
+        action_vals['context'] = ctx
+        return action_vals
