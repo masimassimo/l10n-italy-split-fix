@@ -141,6 +141,7 @@ class TestDdt(TransactionCase):
             ddt2.ddt_number, '%s/%s/%s' % (
                 ddt2.date.day, ddt2.date.month, ddt2.date.year)
         )
+        print(inv_dict)
         self.assertEqual(
             list(inv_dict[ddt1_key].values())[0][0].product_id.id,
             self.product1.id)
