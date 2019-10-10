@@ -213,6 +213,18 @@ class AccountInvoice(models.Model):
             'e_invoice_date_invoice': date_invoice,
         })
 
+    @api.multi
+    def open_form_current(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': self._name,
+            'res_id': self.id,
+            'taget': 'current'
+        }
+
 
 class FatturapaArticleCode(models.Model):
     # _position = ['2.2.1.3']
