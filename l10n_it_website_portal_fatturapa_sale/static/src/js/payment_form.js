@@ -15,16 +15,10 @@ odoo.define('l10n_it_website_portal_fatturapa_sale.payment_form', function (requ
                 var inv_subj =
                     form.elements.electronic_invoice_subjected.checked;
 
-                return ajax.jsonRpc('/web/dataset/call_kw', 'call', {
-                        model: 'res.partner',
-                        method: 'write_sudo_inv_subj',
-                        args: [
-                            [partner_id],
-                            inv_subj,
-                        ],
-                        kwargs: {},
+                return ajax.jsonRpc('/my/orders/check-e-invoice-partner-data', 'call', {
+                        'partner_id': partner_id,
+                        'inv_subj': inv_subj
                     }).then(
-                    // fnDone
                     function (result){
                         if (result)
                             return super_pay_event.apply(self, self_args);

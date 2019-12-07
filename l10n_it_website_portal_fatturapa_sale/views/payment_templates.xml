@@ -13,7 +13,7 @@
                 <label>
                     <input type="checkbox"
                            name="electronic_invoice_subjected"
-                           t-att-checked="'checked' if request.env['res.partner'].browse(partner_id).electronic_invoice_subjected else None"/>
+                           t-att-checked="'checked' if request.env['res.partner'].sudo().browse(partner_id).electronic_invoice_subjected else None"/>
                     I request to receive electronic invoice
                 </label>
             </div>
