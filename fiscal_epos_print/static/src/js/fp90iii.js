@@ -390,6 +390,13 @@ odoo.define("fiscal_epos_print.models", function (require) {
           Prints a receipt
         */
         printFiscalReceipt: function(receipt) {
+            if (this.sender.pos.config.iface_tax_included == 'subtotal') {
+                this.sender.gui.show_popup('error',{
+                    'title': _t('Wrong tax configuration'),
+                    'body':  _t("Product prices on receipts must be set to 'Tax-Included Price' in POS configuration"),
+                });
+                return false;
+            }
             var self = this;
             var xml = '<printerFiscalReceipt>';
             // header must be printed before beginning a fiscal receipt
@@ -400,17 +407,21 @@ odoo.define("fiscal_epos_print.models", function (require) {
             _.each(receipt.orderlines, function(l, i, list) {
                 if (l.price >= 0) {
                     if(l.quantity>=0) {
+                        var full_price = l.price;
+                        if (l.discount) {
+                            full_price = round_pr(l.price / (1 - (l.discount / 100)), self.sender.pos.currency.rounding);
+                        }
                         xml += self.printRecItem({
                             description: l.product_name,
                             quantity: l.quantity,
-                            unitPrice: l.price,
+                            unitPrice: full_price,
                             department: l.tax_department.code
                         });
                         if (l.discount) {
                             xml += self.printRecItemAdjustment({
                                 adjustmentType: 0,
                                 description: _t('Discount') + ' ' + l.discount + '%',
-                                amount: round_pr(l.quantity * l.price - l.price_display, self.sender.pos.currency.rounding),
+                                amount: round_pr(l.quantity * full_price - l.price, self.sender.pos.currency.rounding),
                             });
                         }
                     }
