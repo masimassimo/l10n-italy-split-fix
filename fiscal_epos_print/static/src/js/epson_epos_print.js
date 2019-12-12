@@ -146,13 +146,6 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
           Prints a receipt
         */
         printFiscalReceipt: function(receipt) {
-            if (this.sender.pos.config.iface_tax_included == 'subtotal') {
-                this.sender.gui.show_popup('error',{
-                    'title': _t('Wrong tax configuration'),
-                    'body':  _t("Product prices on receipts must be set to 'Tax-Included Price' in POS configuration"),
-                });
-                return false;
-            }
             var self = this;
             var xml = '<printerFiscalReceipt>';
             // header must be printed before beginning a fiscal receipt

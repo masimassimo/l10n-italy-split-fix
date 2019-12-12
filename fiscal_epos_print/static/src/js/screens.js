@@ -45,6 +45,13 @@ odoo.define("fiscal_epos_print.screens", function (require) {
             }
         },
         order_is_valid: function(force_validation) {
+            if (this.pos.config.iface_tax_included == 'subtotal') {
+                this.gui.show_popup('error',{
+                    'title': _t('Wrong tax configuration'),
+                    'body':  _t("Product prices on receipts must be set to 'Tax-Included Price' in POS configuration"),
+                });
+                return false;
+            }
             var self = this;
             var receipt = this.pos.get_order();
             if (receipt.has_refund && (receipt.refund_date == null || receipt.refund_date === '' ||
