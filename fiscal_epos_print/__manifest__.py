@@ -21,10 +21,6 @@
         'views/point_of_sale.xml',
         'views/assets.xml',
     ],
-    'js': [
-        'static/src/js/fp90iii.js',
-        'static/lib/fiscalprint/fiscalprint.js'
-    ],
     'qweb': [
         'static/src/xml/pos.xml'
     ],
