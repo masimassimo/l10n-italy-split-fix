@@ -130,7 +130,10 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
                 var tagStatus = tag_list_names.filter(getStatusField);
                 if (res['code'] == "EPTR_REC_EMPTY"){
                     sender.chrome.loading_hide();
-                    alert(_t("Error missing paper."));
+                    sender.pos.gui.show_popup('error', {
+                        'title': _t('Error'),
+                        'body': _t('Missing paper'),
+                    });
                 }
                 else if (add_info.responseCommand == "1138") {
                     // coming from FiscalPrinterADEFilesButtonWidget
@@ -138,8 +141,11 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
                     var to_be_sent = add_info.responseData[9] + add_info.responseData[10] + add_info.responseData[11] + add_info.responseData[12];
                     var old = add_info.responseData[13] + add_info.responseData[14] + add_info.responseData[15] + add_info.responseData[16];
                     var rejected = add_info.responseData[17] + add_info.responseData[18] + add_info.responseData[19] + add_info.responseData[20];
-                    var msg = _t("Files waiting to be sent: ") + to_be_sent + _t("\nOld files: ") + old + _t("\nRejected files: ") + rejected
-                    alert(msg);
+                    var msg = _t("Files waiting to be sent: ") + to_be_sent + "; " + _t("Old files: ") + old + "; " + _t("Rejected files: ") + rejected;
+                    sender.pos.gui.show_popup('alert', {
+                        'title': _t('ADE files'),
+                        'body': msg,
+                    });
                 }
                 else if (tagStatus.length > 0 && res.success) {
                     var info = add_info[tagStatus[0]];
@@ -170,9 +176,10 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
             }
             this.fiscalPrinter.onerror = function() {
                 sender.chrome.loading_hide();
-                alert(
-                _t('Network error. Printer can not be reached')
-                );
+                sender.pos.gui.show_popup('error', {
+                    'title': _t('Network error'),
+                    'body': _t('Printer can not be reached')
+                });
             }
         },
 
