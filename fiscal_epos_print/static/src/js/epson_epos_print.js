@@ -3,6 +3,8 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
 
     var core = require("web.core");
     var utils = require('web.utils');
+    var PosDB = require('point_of_sale.DB');
+    var rpc = require('web.rpc');
     var _t = core._t;
     var round_pr = utils.round_precision;
 
@@ -11,20 +13,126 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
         return pad.substr(pad.length - padding, padding);
     }
 
+    function isErrorStatus(printerStatus) {
+        var error = false;
+        switch (printerStatus.substring(0, 2)) {
+            case "00":
+            case "01":
+            case "20":
+            case "21":
+                error = false;
+                break;
+            default:
+                error = true;
+        }
+        return error;
+    }
+
+    function decodeFpStatus(printerStatus) {
+        var printer = "";
+        var ej = "";
+        var receipt = "";
+
+        switch (printerStatus.substring(0, 1)) {
+            case "0":
+                printer = false;
+                break;
+            case "2":
+                printer = _t("Paper running low");
+                break;
+            case "3":
+                printer = _t("Offline (end of paper or open cover)");
+                break;
+            default:
+                printer = _t("Wrong answer");
+        }
+
+        switch (printerStatus.substring(1, 2)) {
+            case "0":
+                ej = false;
+                break;
+            case "1":
+                ej = _t("Running low");
+                break;
+            case "2":
+                ej = _t("To format");
+                break;
+            case "3":
+                ej = _t("Previous");
+                break;
+            case "4":
+                ej = _t("From other measurement device");
+                break;
+            case "5":
+                ej = _t("Finished");
+                break;
+            default:
+                ej = _t("Wrong answer");
+        }
+
+        switch (printerStatus.substring(3, 4)) {
+            case "0":
+                receipt = _t("Fiscal open");
+                break;
+            case "1":
+                receipt = false;
+                //receipt = "Fiscale/Non fiscale chiuso";
+                break;
+            case "2":
+                receipt = _t("Non fiscal open");
+                break;
+            case "3":
+                receipt = _t("Payment in progress");
+                break;
+            case "4":
+                receipt = _t("Error on last ESC/POS command with Fiscal/Non fiscal closed");
+                break;
+            case "5":
+                receipt = _t("Negative receipt");
+                break;
+            case "6":
+                receipt = _t("Error on last ESC/POS command with Non fiscal open");
+                break;
+            case "7":
+                receipt = _t("Waiting for receipt closing in JAVAPOS mode");
+                break;
+            case "8":
+                receipt = _t("Fiscal document open");
+                break;
+            case "A":
+                receipt = _t("Title open");
+                break;
+            case "B":
+                receipt = _t("Title closed");
+                break;
+            default:
+                receipt = _t("Wrong answer");
+        }
+
+        return printer || ej || receipt;
+    }
+
+    function getStatusField(tag){
+        return tag === 'printerStatus' || tag === 'fsStatus';
+    }
+
     var eposDriver = core.Class.extend({
         init: function(options, sender) {
+            var self = this;
             options = options || {};
             this.url = options.url || 'http://192.168.1.1/cgi-bin/fpmate.cgi';
             this.fiscalPrinter = new epson.fiscalPrint();
-            this.fpreponse = false;
+            this.fpresponse = false;
             this.sender = sender;
+            this.order = options.order || null;
             this.fiscalPrinter.onreceive = function(res, tag_list_names, add_info) {
-                this.fpreponse = tag_list_names
+                self.fpresponse = tag_list_names
+                var tagStatus = tag_list_names.filter(getStatusField);
                 if (res['code'] == "EPTR_REC_EMPTY"){
                     sender.chrome.loading_hide();
                     alert(_t("Error missing paper."));
                 }
-                if (add_info.responseCommand == "1138") {
+                else if (add_info.responseCommand == "1138") {
                     // coming from FiscalPrinterADEFilesButtonWidget
                     sender.chrome.loading_hide();
                     var to_be_sent = add_info.responseData[9] + add_info.responseData[10] + add_info.responseData[11] + add_info.responseData[12];
@@ -33,6 +141,32 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
                     var msg = _t("Files waiting to be sent: ") + to_be_sent + _t("\nOld files: ") + old + _t("\nRejected files: ") + rejected
                     alert(msg);
                 }
+                else if (tagStatus.length > 0 && res.success) {
+                    var info = add_info[tagStatus[0]];
+                    var msgPrinter = decodeFpStatus(info);
+                    if (!isErrorStatus(info)) {
+                        var order = self.order;
+                        if (!order.fiscal_receipt_number) {
+                            order.fiscal_receipt_number = parseInt(add_info.fiscalReceiptNumber);
+                            order.fiscal_receipt_amount = parseFloat(add_info.fiscalReceiptAmount.replace(',', '.'));
+                            order.fiscal_receipt_date = add_info.fiscalReceiptDate;
+                            order.fiscal_z_rep_number = add_info.zRepNumber;
+                            sender.pos.db.add_order(order.export_as_JSON());
+                        }
+                    }
+                    else {
+                        sender.pos.gui.show_popup('error', {
+                            'title': _t('Connection to the printer failed'),
+                            'body': msgPrinter,
+                        });
+                    };
+                }
+                else {
+                    sender.pos.gui.show_popup('error', {
+                        'title': _t('Connection to the printer failed'),
+                        'body': _t('An error happened while sending data to the printer. Error code: ') + res.code,
+                    });
+                };
             }
             this.fiscalPrinter.onerror = function() {
                 sender.chrome.loading_hide();
@@ -213,7 +347,7 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
         printFiscalReport: function() {
             var xml = '<printerFiscalReport>';
             xml += '<displayText operator="1" data="' + _t('Fiscal Closing') + '" />';
-            xml += '<printZReport operator="1" />';
+            xml += '<printZReport operator="" />';
             xml += '</printerFiscalReport>';
             this.fiscalPrinter.send(this.url, xml);
         },
