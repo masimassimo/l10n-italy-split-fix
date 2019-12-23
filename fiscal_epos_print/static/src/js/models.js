@@ -74,6 +74,12 @@ odoo.define('fiscal_epos_print.models', function (require) {
 
             return receipt
         },
+
+        getPrinterOptions: function (){
+            var protocol = ((this.pos.config.use_https) ? 'https://' : 'http://');
+            var printer_url = protocol + this.pos.config.printer_ip + '/cgi-bin/fpmate.cgi';
+            return {url: printer_url};
+        },
     });
 
     var _orderline_super = models.Orderline.prototype;

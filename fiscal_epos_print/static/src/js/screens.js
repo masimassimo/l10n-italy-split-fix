@@ -10,23 +10,43 @@ odoo.define("fiscal_epos_print.screens", function (require) {
     var eposDriver = epson_epos_print.eposDriver;
 
     ReceiptScreenWidget.include({
-        show: function(){
-            if (!this.pos.config.printer_ip || (this.pos.config.printer_ip && this.pos.config.show_receipt_when_printing) ){
-                this._super();
+
+        lock_screen: function(locked) {
+            this._super.apply(this, arguments);
+            if (locked) {
+                this.$('.receipt-sent').hide();
+                this.$('.printing-error').show();
+                this.$('.printing-retry').show();
+            } else {
+                this.$('.receipt-sent').show();
+                this.$('.printing-error').hide();
+                this.$('.printing-retry').hide();
             }
-            else
-            {
-                this.click_next();
-            }
+        },
+
+        sendToFP90Printer: function(receipt, printer_options) {
+            var fp90 = new eposDriver(printer_options, this);
+            fp90.printFiscalReceipt(receipt);
+        },
+
+        render_receipt: function() {
+            var self = this;
+            this._super();
+            this.$('.printing-retry').click(function(){
+                if (self._locked) {
+                    var currentOrder = self.pos.get_order();
+                    self.chrome.loading_show();
+                    self.chrome.loading_message(_t('Connecting to the fiscal printer'));
+                    var printer_options = currentOrder.getPrinterOptions();
+                    printer_options.order = currentOrder;
+                    var receipt = currentOrder.export_for_printing();
+                    self.sendToFP90Printer(receipt, printer_options);
+                }
+            });
         }
     });
 
     PaymentScreenWidget.include({
-        getPrinterOptions: function (){
-            var protocol = ((this.pos.config.use_https) ? 'https://' : 'http://');
-            var printer_url = protocol + this.pos.config.printer_ip + '/cgi-bin/fpmate.cgi';
-            return {url: printer_url};
-        },
         sendToFP90Printer: function(receipt, printer_options) {
             var fp90 = new eposDriver(printer_options, this);
             fp90.printFiscalReceipt(receipt);
@@ -38,11 +58,12 @@ odoo.define("fiscal_epos_print.screens", function (require) {
             var currentOrder = this.pos.get('selectedOrder');
             this._super.apply(this, arguments);
             if (this.pos.config.printer_ip && !currentOrder.is_to_invoice()) {
-                var printer_options = this.getPrinterOptions();
+                this.chrome.loading_show();
+                this.chrome.loading_message(_t('Connecting to the fiscal printer'));
+                var printer_options = currentOrder.getPrinterOptions();
                 printer_options.order = currentOrder;
                 var receipt = currentOrder.export_for_printing();
                 this.sendToFP90Printer(receipt, printer_options);
-                currentOrder._printed = true;
             }
         },
         order_is_valid: function(force_validation) {

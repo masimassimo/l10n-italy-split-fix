@@ -22,12 +22,6 @@ odoo.define("fiscal_epos_print.pos_order_mgmt", function (require) {
             return order;
         },
         // copiato da screens.PaymentScreenWidget
-        getPrinterOptions: function (){
-            var protocol = ((this.pos.config.use_https) ? 'https://' : 'http://');
-            var printer_url = protocol + this.pos.config.printer_ip + '/cgi-bin/fpmate.cgi';
-            return {url: printer_url};
-        },
-        // copiato da screens.PaymentScreenWidget
         sendToFP90Printer: function(receipt, printer_options) {
             var fp90 = new eposDriver(printer_options, this);
             fp90.printFiscalReceipt(receipt);
@@ -41,8 +35,10 @@ odoo.define("fiscal_epos_print.pos_order_mgmt", function (require) {
                     });
                     return;
                 }
+                this.chrome.loading_show();
+                this.chrome.loading_message(_t('Connecting to the fiscal printer'));
                 var receipt = order.export_for_printing();
-                var printer_options = this.getPrinterOptions();
+                var printer_options = order.getPrinterOptions();
                 printer_options.order = order;
                 this.sendToFP90Printer(receipt, printer_options);
             }

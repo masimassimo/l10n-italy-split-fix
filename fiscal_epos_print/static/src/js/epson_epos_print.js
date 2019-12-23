@@ -126,10 +126,11 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
             this.sender = sender;
             this.order = options.order || null;
             this.fiscalPrinter.onreceive = function(res, tag_list_names, add_info) {
+                sender.chrome.loading_hide();
                 self.fpresponse = tag_list_names
                 var tagStatus = tag_list_names.filter(getStatusField);
                 if (res['code'] == "EPTR_REC_EMPTY"){
-                    sender.chrome.loading_hide();
+                    sender.chrome.screens['receipt'].lock_screen(true);
                     sender.pos.gui.show_popup('error', {
                         'title': _t('Error'),
                         'body': _t('Missing paper'),
@@ -137,7 +138,6 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
                 }
                 else if (add_info.responseCommand == "1138") {
                     // coming from FiscalPrinterADEFilesButtonWidget
-                    sender.chrome.loading_hide();
                     var to_be_sent = add_info.responseData[9] + add_info.responseData[10] + add_info.responseData[11] + add_info.responseData[12];
                     var old = add_info.responseData[13] + add_info.responseData[14] + add_info.responseData[15] + add_info.responseData[16];
                     var rejected = add_info.responseData[17] + add_info.responseData[18] + add_info.responseData[19] + add_info.responseData[20];
@@ -151,7 +151,9 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
                     var info = add_info[tagStatus[0]];
                     var msgPrinter = decodeFpStatus(info);
                     if (!isErrorStatus(info)) {
+                        sender.chrome.screens['receipt'].lock_screen(false);
                         var order = self.order;
+                        order._printed = true;
                         if (!order.fiscal_receipt_number) {
                             order.fiscal_receipt_number = parseInt(add_info.fiscalReceiptNumber);
                             order.fiscal_receipt_amount = parseFloat(add_info.fiscalReceiptAmount.replace(',', '.'));
@@ -159,8 +161,12 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
                             order.fiscal_z_rep_number = add_info.zRepNumber;
                             sender.pos.db.add_order(order.export_as_JSON());
                         }
+                        if (!sender.pos.config.show_receipt_when_printing) {
+                            sender.chrome.screens['receipt'].click_next();
+                        }
                     }
                     else {
+                        sender.chrome.screens['receipt'].lock_screen(true);
                         sender.pos.gui.show_popup('error', {
                             'title': _t('Connection to the printer failed'),
                             'body': msgPrinter,
@@ -168,6 +174,7 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
                     };
                 }
                 else {
+                    sender.chrome.screens['receipt'].lock_screen(true);
                     sender.pos.gui.show_popup('error', {
                         'title': _t('Connection to the printer failed'),
                         'body': _t('An error happened while sending data to the printer. Error code: ') + res.code,
@@ -176,6 +183,7 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
             }
             this.fiscalPrinter.onerror = function() {
                 sender.chrome.loading_hide();
+                sender.chrome.screens['receipt'].lock_screen(true);
                 sender.pos.gui.show_popup('error', {
                     'title': _t('Network error'),
                     'body': _t('Printer can not be reached')
