@@ -125,6 +125,7 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
             this.fpresponse = false;
             this.sender = sender;
             this.order = options.order || null;
+            this.requested_report = options.requested_report || false;
             this.fiscalPrinter.onreceive = function(res, tag_list_names, add_info) {
                 sender.chrome.loading_hide();
                 self.fpresponse = tag_list_names
@@ -151,18 +152,21 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
                     var info = add_info[tagStatus[0]];
                     var msgPrinter = decodeFpStatus(info);
                     if (!isErrorStatus(info)) {
-                        sender.chrome.screens['receipt'].lock_screen(false);
-                        var order = self.order;
-                        order._printed = true;
-                        if (!order.fiscal_receipt_number) {
-                            order.fiscal_receipt_number = parseInt(add_info.fiscalReceiptNumber);
-                            order.fiscal_receipt_amount = parseFloat(add_info.fiscalReceiptAmount.replace(',', '.'));
-                            order.fiscal_receipt_date = add_info.fiscalReceiptDate;
-                            order.fiscal_z_rep_number = add_info.zRepNumber;
-                            sender.pos.db.add_order(order.export_as_JSON());
-                        }
-                        if (!sender.pos.config.show_receipt_when_printing) {
-                            sender.chrome.screens['receipt'].click_next();
+                        // Z report can be printed from header bar: we just need to hide the loading screen, done above
+                        if (!self.requested_report) {
+                            sender.chrome.screens['receipt'].lock_screen(false);
+                            var order = self.order;
+                            order._printed = true;
+                            if (!order.fiscal_receipt_number) {
+                                order.fiscal_receipt_number = parseInt(add_info.fiscalReceiptNumber);
+                                order.fiscal_receipt_amount = parseFloat(add_info.fiscalReceiptAmount.replace(',', '.'));
+                                order.fiscal_receipt_date = add_info.fiscalReceiptDate;
+                                order.fiscal_z_rep_number = add_info.zRepNumber;
+                                sender.pos.db.add_order(order.export_as_JSON());
+                            }
+                            if (!sender.pos.config.show_receipt_when_printing) {
+                                sender.chrome.screens['receipt'].click_next();
+                            }
                         }
                     }
                     else {
@@ -389,8 +393,14 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
 
         printFiscalReport: function() {
             var xml = '<printerFiscalReport>';
-            xml += '<displayText operator="1" data="' + _t('Fiscal Closing') + '" />';
             xml += '<printZReport operator="" />';
+            xml += '</printerFiscalReport>';
+            this.fiscalPrinter.send(this.url, xml);
+        },
+
+        printFiscalXReport: function() {
+            var xml = '<printerFiscalReport>';
+            xml += '<printXReport operator="" />';
             xml += '</printerFiscalReport>';
             this.fiscalPrinter.send(this.url, xml);
         },
