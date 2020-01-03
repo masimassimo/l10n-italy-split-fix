@@ -147,26 +147,30 @@ odoo.define("fiscal_epos_print.screens", function (require) {
         },
         refund_get_button_color: function() {
             var order = this.pos.get_order();
-            var lines = order.orderlines;
-            var has_refund = lines.find(function(line){ return line.quantity < 0.0;}) != undefined;
             var color = '#e2e2e2';
-            if (has_refund == true)
-            {
-                if (order.refund_date && order.refund_date != '' && order.refund_doc_num && order.refund_doc_num != '' &&
-                    order.refund_cash_fiscal_serial && order.refund_cash_fiscal_serial != '' && order.refund_report && order.refund_report != '') {
-                        color = 'lightgreen';
-                }
-                else
+            if(order) {
+                var lines = order.orderlines;
+                var has_refund = lines.find(function(line){ return line.quantity < 0.0;}) != undefined;
+                if (has_refund == true)
                 {
-                    color = 'red';
+                    if (order.refund_date && order.refund_date != '' && order.refund_doc_num && order.refund_doc_num != '' &&
+                        order.refund_cash_fiscal_serial && order.refund_cash_fiscal_serial != '' && order.refund_report && order.refund_report != '') {
+                            color = 'lightgreen';
+                    }
+                    else
+                    {
+                        color = 'red';
+                    }
                 }
             }
             return color;
         },
         orderline_change: function(){
             var order = this.pos.get_order();
-            var lines = order.orderlines;
-            order.has_refund = lines.find(function(line){ return line.quantity < 0.0;}) != undefined;
+            if (order) {
+                var lines = order.orderlines;
+                order.has_refund = lines.find(function(line){ return line.quantity < 0.0;}) != undefined;
+            }
             this.renderElement();
         },
     });
