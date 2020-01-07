@@ -167,6 +167,10 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
                                 // try to save the order
                                 sender.pos.push_order();
                             }
+                            if(sender.pos.config.fiscal_cashdrawer)
+                            {
+                                self.printOpenCashDrawer();
+                            }
                             if (!sender.pos.config.show_receipt_when_printing) {
                                 sender.chrome.screens['receipt'].click_next();
                             }
@@ -441,6 +445,13 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
         printFiscalReprintLast: function() {
             var xml = '<printerCommand>';
             xml += '<printDuplicateReceipt operator="1" />';
+            xml += '</printerCommand>';
+            this.fiscalPrinter.send(this.url, xml);
+        },
+
+        printOpenCashDrawer: function() {
+            var xml = '<printerCommand>';
+            xml += '<openDrawer operator="1"/>';
             xml += '</printerCommand>';
             this.fiscalPrinter.send(this.url, xml);
         },

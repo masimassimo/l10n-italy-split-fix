@@ -128,6 +128,28 @@ odoo.define("fiscal_epos_print.chrome", function (require) {
         },
     });
 
+    var PrinterFiscalOpenCashDrawer = PosBaseWidget.extend({
+        template: 'PrinterFiscalOpenCashDrawer',
+
+        button_click: function () {
+            this.chrome.loading_show();
+            this.chrome.loading_message(_t('Connecting to the fiscal printer'));
+            var protocol = ((this.pos.config.use_https) ? 'https://' : 'http://');
+            var printer_url = protocol + this.pos.config.printer_ip + '/cgi-bin/fpmate.cgi';
+            var printer_options = {url: printer_url, requested_z_report: true};
+            var fp90 = new eposDriver(printer_options, this);
+            fp90.printOpenCashDrawer();
+        },
+
+        renderElement: function () {
+            var self = this;
+            this._super();
+            this.$el.click(function () {
+                self.button_click();
+            });
+        },
+    });
+
     var widgets = chrome.Chrome.prototype.widgets;
     widgets.push({
         'name': _t('ADE files status'),
@@ -137,6 +159,15 @@ odoo.define("fiscal_epos_print.chrome", function (require) {
             'label': 'ADE files status',
         },
     });
+    widgets.push({
+        'name': _t('Open CashDrawer'),
+        'widget': PrinterFiscalOpenCashDrawer,
+        'append': '.pos-rightheader',
+        'args': {
+            'label': 'Open CashDrawer',
+        },
+    });
+
     widgets.push({
         'name': _t('Printer Fiscal Closure'),
         'widget': PrinterFiscalClosure,
@@ -168,6 +199,7 @@ odoo.define("fiscal_epos_print.chrome", function (require) {
         PrinterFiscalClosure: PrinterFiscalClosure,
         PrinterFiscalXReport: PrinterFiscalXReport,
         PrinterFiscalReprintLast: PrinterFiscalReprintLast,
+        PrinterFiscalOpenCashDrawer: PrinterFiscalOpenCashDrawer,
     };
 
 });
