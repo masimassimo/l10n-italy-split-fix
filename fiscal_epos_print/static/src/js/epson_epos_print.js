@@ -180,7 +180,7 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
                         });
                     };
                 }
-                else {
+                else if (!res.success) {
                     sender.chrome.screens['receipt'].lock_screen(true);
                     sender.pos.gui.show_popup('error', {
                         'title': _t('Connection to the printer failed'),
@@ -426,6 +426,13 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
         getStatusOfFilesForADE: function() {
             var xml = '<printerCommand>';
             xml += '<directIO command="1138" data="01" />';
+            xml += '</printerCommand>';
+            this.fiscalPrinter.send(this.url, xml);
+        },
+
+        printFiscalReprintLast: function() {
+            var xml = '<printerCommand>';
+            xml += '<printDuplicateReceipt operator="1" />';
             xml += '</printerCommand>';
             this.fiscalPrinter.send(this.url, xml);
         },
