@@ -198,12 +198,25 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
             }
         },
 
+        encodeXml: function (string) {
+            var xml_special_to_escaped_one_map = {
+                '&': '&amp;',
+                '"': '&quot;',
+                '<': '&lt;',
+                '>': '&gt;'
+            };
+
+            return string.replace(/([\&"<>])/g, function(str, item) {
+                return xml_special_to_escaped_one_map[item];
+            });
+        },
+
         /*
           Prints a sale item line.
         */
         printRecItem: function(args) {
             var tag = '<printRecItem'
-                + ' description="' + (args.description || '') + '"'
+                + ' description="' + this.encodeXml(args.description || '') + '"'
                 + ' quantity="' + (args.quantity || '1') + '"'
                 + ' unitPrice="' + (args.unitPrice || '') + '"'
                 + ' department="' + (args.department || '1') + '"'
@@ -226,7 +239,7 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
                 ' ' + args.refund_cash_fiscal_serial;
 
             var tag = '<printRecMessage'
-                + ' messageType="4" message="' + message + '" font="1" index="1"'
+                + ' messageType="4" message="' + this.encodeXml(message) + '" font="1" index="1"'
                 + ' operator="' + (args.operator || '1') + '"'
                 + ' />\n';
             return tag;
@@ -237,7 +250,7 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
         */
         printRecRefund: function(args) {
             var tag = '<printRecRefund'
-                + ' description="' + (args.description || '') + '"'
+                + ' description="' + this.encodeXml(args.description || '') + '"'
                 + ' quantity="' + (args.quantity || '1') + '"'
                 + ' unitPrice="' + (args.unitPrice || '') + '"'
                 + ' department="' + (args.department || '1') + '"'
@@ -254,7 +267,7 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
             var tag = '<printRecItemAdjustment'
                 + ' operator="' + (args.operator || '1') + '"'
                 + ' adjustmentType="' + (args.adjustmentType || 0) + '"'
-                + ' description="' + (args.description || '' ) + '"'
+                + ' description="' + this.encodeXml(args.description || '' ) + '"'
                 + ' amount="' + (args.amount || '') + '"'
                 + ' department="' + (args.department || '') + '"'
                 + ' justification="' + (args.justification || '2') + '"'
@@ -268,7 +281,7 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
         printRecTotal: function(args) {
             var tag = '<printRecTotal'
                 + ' operator="' + (args.operator || '1') + '"'
-                + ' description="' + (args.description || _t('Payment')) + '"'
+                + ' description="' + this.encodeXml(args.description || _t('Payment')) + '"'
                 + ' payment="' + (args.payment || '') + '"'
                 + ' paymentType="' + (args.paymentType || '0') + '"'
                 + ' index="' + (args.paymentIndex || '0') + '"'
@@ -291,7 +304,7 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
             if (receipt.header != '' && receipt.header.length > 0) {
                 var hdr = receipt.header.split(/\r\n|\r|\n/);
                 _.each(hdr, function(m, i) {
-                    msg += '<printRecMessage' + ' messageType="1" message="' + m
+                    msg += '<printRecMessage' + ' messageType="1" message="' + this.encodeXml(m)
                          + '" font="1" index="' + (i+1) + '"'
                          + ' operator="' + (receipt.operator || '1') + '" />'
                     });
@@ -306,7 +319,7 @@ odoo.define("fiscal_epos_print.epson_epos_print", function (require) {
             if (receipt.footer != '' && receipt.footer.length > 0) {
                 var hdr = receipt.footer.split(/\r\n|\r|\n/);
                 _.each(hdr, function(m, i) {
-                    msg += '<printRecMessage' + ' messageType="3" message="' + m
+                    msg += '<printRecMessage' + ' messageType="3" message="' + this.encodeXml(m)
                          + '" font="1" index="' + (i+1) + '"'
                          + ' operator="' + (receipt.operator || '1') + '" />'
                     });
