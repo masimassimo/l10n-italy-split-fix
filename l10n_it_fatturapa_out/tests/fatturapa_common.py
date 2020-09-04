@@ -74,6 +74,7 @@ class FatturaPACommon(AccountTestUsers):
         self.cr.execute(
             "UPDATE res_company SET currency_id = %s WHERE id = %s",
             [self.EUR.id, self.company.id])
+        self.company.refresh()
 
     def AttachFileToInvoice(self, InvoiceId, filename):
         self.fatturapa_attach.create(
