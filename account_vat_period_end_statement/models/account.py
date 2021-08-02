@@ -276,6 +276,14 @@ class AccountVatPeriodEndStatement(models.Model):
         default=lambda self: self.env['res.company']._company_default_get(
             'account.invoice'))
     annual = fields.Boolean("Annual prospect")
+    account_ids = fields.Many2many('account.account', string='Accounts filter',
+                                   domain=lambda self: self._get_domain_account())
+
+    def _get_domain_account(self):
+        tax_ids = self.env['account.tax'].search([]).filtered(
+            lambda tax: tax.vat_statement_account_id)
+        account_ids = tax_ids.mapped('vat_statement_account_id')
+        return [('id', 'in', (account_ids.ids))]
 
     @api.multi
     def unlink(self):
@@ -637,24 +645,27 @@ class AccountVatPeriodEndStatement(models.Model):
             ('type_tax_use', 'in', ['sale', 'purchase']),
         ])
         for tax in taxes:
-            # se ho una tassa padre con figli cee_type, condidero le figlie
-            if any(tax_ch for tax_ch in tax.children_tax_ids
-                   if tax_ch.cee_type in ('sale', 'purchase')):
+            if tax.vat_statement_account_id and \
+                (tax.vat_statement_account_id.id in
+                 statement.account_ids.ids or not statement.account_ids):
+                # se ho una tassa padre con figli cee_type, condidero le figlie
+                if any(tax_ch for tax_ch in tax.children_tax_ids
+                       if tax_ch.cee_type in ('sale', 'purchase')):
 
-                for tax_ch in tax.children_tax_ids:
-                    if tax_ch.cee_type == 'sale':
-                        self._set_debit_lines(tax_ch,
-                                              debit_line_ids,
-                                              statement)
-                    elif tax_ch.cee_type == 'purchase':
-                        self._set_credit_lines(tax_ch,
-                                               credit_line_ids,
-                                               statement)
+                    for tax_ch in tax.children_tax_ids:
+                        if tax_ch.cee_type == 'sale':
+                            self._set_debit_lines(tax_ch,
+                                                  debit_line_ids,
+                                                  statement)
+                        elif tax_ch.cee_type == 'purchase':
+                            self._set_credit_lines(tax_ch,
+                                                   credit_line_ids,
+                                                   statement)
 
-            elif tax.type_tax_use == 'sale':
-                self._set_debit_lines(tax, debit_line_ids, statement)
-            elif tax.type_tax_use == 'purchase':
-                self._set_credit_lines(tax, credit_line_ids, statement)
+                elif tax.type_tax_use == 'sale':
+                    self._set_debit_lines(tax, debit_line_ids, statement)
+                elif tax.type_tax_use == 'purchase':
+                    self._set_credit_lines(tax, credit_line_ids, statement)
 
         return credit_line_ids, debit_line_ids
 
