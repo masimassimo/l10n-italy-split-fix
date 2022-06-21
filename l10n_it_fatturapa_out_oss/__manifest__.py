@@ -17,4 +17,5 @@
     ],
     "installable": True,
     "autoinstall": True,
+    "post_init_hook": "_l10n_it_fatturapa_out_oss_post_init",
 }
