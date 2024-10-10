@@ -55,6 +55,7 @@
             "fiscal_epos_print/static/src/xml/ChromeWidgets/EpsonFP81IIComponent.xml",
             # "fiscal_epos_print/static/src/xml/ChromeWidgets/SetLotteryCodeButton.xml",
             "fiscal_epos_print/static/src/xml/ChromeWidgets/SetRefundInfoButton.xml",
+            "fiscal_epos_print/static/src/js/Screens/TicketScreen/TicketScreen.js",
         ],
     },
     "installable": True,
