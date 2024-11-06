@@ -342,15 +342,12 @@ class AccountInvoice(models.Model):
         self.ensure_one()
         if not self.invoice_line_ids:
             return
-
-        for line in self.invoice_line_ids:
-            if line.price_unit >= 0:
-                return
-        # if every line is negative, change them all, and change move type
-        if self.fiscal_document_type_id.code == "TD01":
-            self.type = "in_refund"
-        for line in self.invoice_line_ids:
-            line.price_unit = -line.price_unit
+        # if total is negative, change lines sign, and change move type
+        if self.amount_total < 0:
+            if self.fiscal_document_type_id.code == "TD01":
+                self.type = "in_refund"
+            for line in self.invoice_line_ids:
+                line.price_unit = -line.price_unit
         self.compute_taxes()
 
 
